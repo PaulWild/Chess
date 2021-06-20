@@ -28,7 +28,7 @@ export const Draggable = ({
   }, [position, initial.pressed]);
 
   const onMouseUpCallback = React.useCallback(
-    (event: MouseEvent): void => {
+    (eventActions: MouseEvent | TouchEvent): void => {
       setInitial({ x: 0, y: 0, pressed: false });
       setPosition({ x: 0, y: 0 });
       onMouseUp?.(-1, -1);
@@ -37,13 +37,20 @@ export const Draggable = ({
   );
 
   const onMouseMoveCallback = React.useCallback(
-    (event: MouseEvent): void => {
+    (eventAction: MouseEvent | TouchEvent): void => {
+      let ev;
+      if (eventAction.type === "mousemove") {
+        ev = eventAction as MouseEvent;
+      } else {
+        ev = (eventAction as TouchEvent).touches[0];
+      }
+
       const x = boundingBox
-        ? Math.max(Math.min(event.pageX, boundingBox.right), boundingBox.left)
-        : event.pageX;
+        ? Math.max(Math.min(ev.pageX, boundingBox.right), boundingBox.left)
+        : ev.pageX;
       const y = boundingBox
-        ? Math.max(Math.min(event.pageY, boundingBox.bottom), boundingBox.top)
-        : event.pageY;
+        ? Math.max(Math.min(ev.pageY, boundingBox.bottom), boundingBox.top)
+        : ev.pageY;
 
       const dx = x - initial.x;
       const dy = y - initial.y;
@@ -63,17 +70,29 @@ export const Draggable = ({
       activeCallback.current = onMouseMoveCallback;
       document.addEventListener("mousemove", onMouseMoveCallback);
       document.addEventListener("mouseup", onMouseUpCallback);
+      document.addEventListener("touchmove", onMouseMoveCallback);
+      document.addEventListener("touchend", onMouseUpCallback);
     } else {
       document.removeEventListener("mousemove", activeCallback.current);
       document.removeEventListener("mouseup", onMouseUpCallback);
+      document.removeEventListener("touchmove", activeCallback.current);
+      document.removeEventListener("touchend", onMouseUpCallback);
     }
   }, [initial.pressed, onMouseMoveCallback, onMouseUpCallback]);
 
-  const onMouseDownCallback = (e: React.MouseEvent) => {
+  const onMouseDownCallback = (
+    eventAction: React.MouseEvent | React.TouchEvent
+  ) => {
+    let ev;
+    if (eventAction.type === "mousedown") {
+      ev = eventAction as React.MouseEvent;
+    } else {
+      ev = (eventAction as React.TouchEvent).touches[0];
+    }
     const box = ref.current?.getBoundingClientRect();
 
-    let initX = e.pageX;
-    let initY = e.pageY;
+    let initX = ev.pageX;
+    let initY = ev.pageY;
 
     if (box) {
       initX = box?.x + box?.width / 2;
@@ -81,11 +100,11 @@ export const Draggable = ({
     }
 
     const x = boundingBox
-      ? Math.max(Math.min(e.pageX, boundingBox.right), boundingBox.left)
-      : e.pageX;
+      ? Math.max(Math.min(ev.pageX, boundingBox.right), boundingBox.left)
+      : ev.pageX;
     const y = boundingBox
-      ? Math.max(Math.min(e.pageY, boundingBox.bottom), boundingBox.top)
-      : e.pageY;
+      ? Math.max(Math.min(ev.pageY, boundingBox.bottom), boundingBox.top)
+      : ev.pageY;
 
     const dx = x - initX;
     const dy = y - initY;
@@ -96,7 +115,11 @@ export const Draggable = ({
   };
 
   return (
-    <div ref={ref} onMouseDown={onMouseDownCallback}>
+    <div
+      ref={ref}
+      onMouseDown={onMouseDownCallback}
+      onTouchStart={onMouseDownCallback}
+    >
       {children}
     </div>
   );
