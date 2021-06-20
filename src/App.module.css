@@ -6,13 +6,13 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  touch-action: none;
 }
 
 .chessGrid {
   display: grid;
   grid-template-columns: repeat(8, 11vmin);
   grid-template-rows: repeat(8, 11vmin);
+  touch-action: none;
 }
 
 .chessSquare {
