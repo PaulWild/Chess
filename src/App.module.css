@@ -10,12 +10,11 @@
 
 .chessGrid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, 11vmin);
+  grid-template-rows: repeat(8, 11vmin);
 }
 
 .chessSquare {
-  height: 5vw;
-  width: 5vw;
   box-sizing: border-box;
   background-color: rgb(112, 112, 112);
 }
