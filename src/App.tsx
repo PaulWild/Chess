@@ -16,7 +16,7 @@ import { FileArray, isLightSquare, RankArray } from "./engine/board";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: PiecePosition[]) => {
   const piecePoistion = currentBoard.find(
-    (x) => x.file === file && x.rank === rank
+    (x) => x.position.file === file && x.position.rank === rank
   );
 
   if (piecePoistion) {

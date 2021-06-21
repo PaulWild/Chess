@@ -27,14 +27,11 @@ export const Draggable = ({
     }
   }, [position, initial.pressed]);
 
-  const onMouseUpCallback = React.useCallback(
-    (eventActions: MouseEvent | TouchEvent): void => {
-      setInitial({ x: 0, y: 0, pressed: false });
-      setPosition({ x: 0, y: 0 });
-      onMouseUp?.(-1, -1);
-    },
-    [onMouseUp]
-  );
+  const onMouseUpCallback = React.useCallback((): void => {
+    setInitial({ x: 0, y: 0, pressed: false });
+    setPosition({ x: 0, y: 0 });
+    onMouseUp?.(-1, -1);
+  }, [onMouseUp]);
 
   const onMouseMoveCallback = React.useCallback(
     (eventAction: MouseEvent | TouchEvent): void => {

@@ -1,4 +1,5 @@
 import React, { useReducer, createContext, Dispatch } from "react";
+import { getValidMoves } from "../engine/board";
 import InitialBoard from "../engine/initial-board";
 import { File, PiecePosition, Rank } from "../engine/types";
 
@@ -68,29 +69,45 @@ const reducer = (state: State, action: Action): State => {
       //Get moving piece
       const piece = state.board.find(
         (x) =>
-          x.rank === state.activePiece?.rank &&
-          x.file === state.activePiece?.file
+          x.position.rank === state.activePiece?.rank &&
+          x.position.file === state.activePiece?.file
       );
 
       if (!piece) throw new Error("state is corrupted");
 
+      const validMoves = getValidMoves(piece, state.board);
+
+      if (
+        !validMoves.some(
+          (x) =>
+            state.threatenedSquare?.rank === x.rank &&
+            state.threatenedSquare?.file === x.file
+        )
+      ) {
+        return {
+          board: state.board,
+        };
+      }
+
       const board = state.board.filter(
         (x) =>
           !(
-            x.rank === state.activePiece?.rank &&
-            x.file === state.activePiece?.file
+            x.position.rank === state.activePiece?.rank &&
+            x.position.file === state.activePiece?.file
           ) &&
           !(
-            x.rank === state.threatenedSquare?.rank &&
-            x.file === state.threatenedSquare?.file
+            x.position.rank === state.threatenedSquare?.rank &&
+            x.position.file === state.threatenedSquare?.file
           )
       );
 
       board.push({
         colour: piece?.colour,
         piece: piece.piece,
-        rank: state.threatenedSquare?.rank,
-        file: state.threatenedSquare?.file,
+        position: {
+          rank: state.threatenedSquare?.rank,
+          file: state.threatenedSquare?.file,
+        },
       });
 
       return {
