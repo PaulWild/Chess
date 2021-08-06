@@ -177,255 +177,71 @@ const getRookValidMoves = (
   piece: PiecePosition,
   board: PiecePosition[]
 ): StandardMove[] => {
-  const validMoves: StandardMove[] = [];
-  //left
-  for (let i = FileArray.indexOf(piece.position.file) - 1; i >= 0; i--) {
-    const pieceAt = getPieceAt(
-      { rank: piece.position.rank, file: FileArray[i] },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: piece.position.rank,
-        file: FileArray[i],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: piece.position.rank,
-        file: FileArray[i],
-      });
-    }
-  }
-  //right
-  for (
-    let i = FileArray.indexOf(piece.position.file) + 1;
-    i < FileArray.length;
-    i++
-  ) {
-    const pieceAt = getPieceAt(
-      { rank: piece.position.rank, file: FileArray[i] },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: piece.position.rank,
-        file: FileArray[i],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: piece.position.rank,
-        file: FileArray[i],
-      });
-    }
-  }
-  //up
-  for (let i = piece.position.rank + 1; i <= RankArray.length; i++) {
-    const pieceAt = getPieceAt(
-      { rank: i as Rank, file: piece.position.file },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: i as Rank,
-        file: piece.position.file,
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: i as Rank,
-        file: piece.position.file,
-      });
-    }
-  }
-  //down
-  for (let i = piece.position.rank - 1; i >= 0; i--) {
-    const pieceAt = getPieceAt(
-      { rank: i as Rank, file: piece.position.file },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: i as Rank,
-        file: piece.position.file,
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: i as Rank,
-        file: piece.position.file,
-      });
-    }
-  }
-  return validMoves;
+  return [
+    ...getMovesOnLine(piece, 1, 0, board),
+    ...getMovesOnLine(piece, 0, 1, board),
+    ...getMovesOnLine(piece, 0, -1, board),
+    ...getMovesOnLine(piece, -1, 0, board),
+  ];
 };
 
 const getBishopValidMoves = (
   piece: PiecePosition,
   board: PiecePosition[]
 ): StandardMove[] => {
-  const validMoves: StandardMove[] = [];
+  return [
+    ...getMovesOnLine(piece, -1, -1, board),
+    ...getMovesOnLine(piece, 1, 1, board),
+    ...getMovesOnLine(piece, 1, -1, board),
+    ...getMovesOnLine(piece, -1, 1, board),
+  ];
+};
 
-  const file = FileArray.indexOf(piece.position.file);
-  const rank = piece.position.rank;
-
+const getMovesOnLine = (
+  piece: PiecePosition,
+  rankDelta: number,
+  fileDelta: number,
+  board: PiecePosition[]
+): StandardMove[] => {
+  const validMoves = [];
   for (let i = 1; i < 8; i++) {
-    const newFile = file - i;
-    const newRank = rank - i;
+    const newFile = FileArray.indexOf(piece.position.file) + fileDelta * i;
+    const newRank = piece.position.rank + rankDelta * i;
 
-    if (newRank < 1 || newFile < 0) {
+    if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
       break;
     }
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
+
+    const move = checkPosition(
+      piece.colour,
+      newRank as Rank,
+      FileArray[newFile],
       board
     );
 
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
+    if (move !== undefined) {
+      validMoves.push(move);
     } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-    }
-  }
-  for (let i = 1; i < 8; i++) {
-    const newFile = file - i;
-    const newRank = rank + i;
-
-    if (newRank > 8 || newFile < 0) {
       break;
-    }
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-    }
-  }
-
-  for (let i = 1; i < 8; i++) {
-    const newFile = file + i;
-    const newRank = rank - i;
-
-    if (newRank < 1 || newFile > 7) {
-      break;
-    }
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-    }
-  }
-
-  for (let i = 1; i < 8; i++) {
-    const newFile = file + i;
-    const newRank = rank + i;
-
-    if (newRank > 8 || newFile > 7) {
-      break;
-    }
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
-      board
-    );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      break;
-    } else if (pieceAt) {
-      break;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
     }
   }
   return validMoves;
 };
 
-// Queen = Bishop + Rook
 const getQueenValidMoves = (
   piece: PiecePosition,
   board: PiecePosition[]
 ): StandardMove[] => {
-  return getRookValidMoves(piece, board).concat(
-    getBishopValidMoves(piece, board)
-  );
+  return [
+    ...getRookValidMoves(piece, board),
+    ...getBishopValidMoves(piece, board),
+  ];
 };
 
 const getKnightValidMoves = (
   piece: PiecePosition,
   board: PiecePosition[]
 ): StandardMove[] => {
-  const validMoves: StandardMove[] = [];
   const moveDeltas = [
     [1, 2],
     [2, 1],
@@ -440,37 +256,53 @@ const getKnightValidMoves = (
   const file = FileArray.indexOf(piece.position.file);
   const rank = piece.position.rank;
 
-  moveDeltas.forEach(([rankDelta, fileDelta]) => {
-    const newFile = file + fileDelta;
-    const newRank = rank + rankDelta;
-    if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-      return;
-    }
+  return moveDeltas
+    .map(([rankDelta, fileDelta]) => {
+      const newFile = file + fileDelta;
+      const newRank = rank + rankDelta;
+      if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
+        return undefined;
+      }
 
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
-      board
-    );
+      return checkPosition(
+        piece.colour,
+        newRank as Rank,
+        FileArray[newFile],
+        board
+      );
+    })
+    .filter(isStandardMove);
+};
 
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      return;
-    } else if (pieceAt) {
-      return;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-    }
-  });
+const isStandardMove = (
+  item: StandardMove | undefined
+): item is StandardMove => {
+  return !!item;
+};
 
-  return validMoves;
+const checkPosition = (
+  colour: "WHITE" | "BLACK",
+  rank: Rank,
+  file: File,
+  board: PiecePosition[]
+): StandardMove | undefined => {
+  const pieceAt = getPieceAt({ rank: rank as Rank, file }, board);
+
+  if (pieceAt && pieceAt.colour !== colour) {
+    return {
+      move: "Move",
+      rank: rank,
+      file: file,
+    };
+  } else if (pieceAt) {
+    return;
+  } else {
+    return {
+      move: "Move",
+      rank: rank,
+      file: file,
+    };
+  }
 };
 
 const getKingValidMoves = (
@@ -499,27 +331,12 @@ const getKingValidMoves = (
       return;
     }
 
-    const pieceAt = getPieceAt(
-      { rank: newRank as Rank, file: FileArray[newFile] },
+    return checkPosition(
+      piece.colour,
+      newRank as Rank,
+      FileArray[newFile],
       board
     );
-
-    if (pieceAt && pieceAt.colour !== piece.colour) {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-      return;
-    } else if (pieceAt) {
-      return;
-    } else {
-      validMoves.push({
-        move: "Move",
-        rank: newRank as Rank,
-        file: FileArray[newFile],
-      });
-    }
   });
 
   //TODO Castling
