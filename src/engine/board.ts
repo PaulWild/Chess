@@ -199,7 +199,6 @@ const getBishopValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     } else if (pieceAt) {
       break;
     } else {
-      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
       validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
     }
   }
@@ -221,7 +220,6 @@ const getBishopValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     } else if (pieceAt) {
       break;
     } else {
-      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
       validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
     }
   }
@@ -244,7 +242,6 @@ const getBishopValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     } else if (pieceAt) {
       break;
     } else {
-      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
       validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
     }
   }
@@ -267,7 +264,6 @@ const getBishopValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     } else if (pieceAt) {
       break;
     } else {
-      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
       validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
     }
   }
