@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import "./App.css";
+import { useState } from "react";
 import { Draggable } from "./components/draggable";
 import { Black, White } from "./components/classic_pieces";
 import styles from "./App.module.css";
