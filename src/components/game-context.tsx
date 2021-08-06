@@ -1,7 +1,7 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import { getValidMoves } from "../engine/board";
 import InitialBoard from "../engine/initial-board";
-import { File, PiecePosition, Rank } from "../engine/types";
+import { File, PiecePosition, Position, Rank } from "../engine/types";
 
 const initialState: State = { board: InitialBoard };
 
@@ -77,11 +77,13 @@ const reducer = (state: State, action: Action): State => {
 
       const validMoves = getValidMoves(piece, state.board);
 
+      console.log(validMoves);
       if (
         !validMoves.some(
           (x) =>
-            state.threatenedSquare?.rank === x.rank &&
-            state.threatenedSquare?.file === x.file
+            (x as Position) &&
+            state.threatenedSquare?.rank === (x as Position).rank &&
+            state.threatenedSquare?.file === (x as Position).file
         )
       ) {
         return {
@@ -104,6 +106,7 @@ const reducer = (state: State, action: Action): State => {
       board.push({
         colour: piece?.colour,
         piece: piece.piece,
+        moved: true,
         position: {
           rank: state.threatenedSquare?.rank,
           file: state.threatenedSquare?.file,
