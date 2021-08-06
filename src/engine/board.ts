@@ -13,6 +13,52 @@ export const isLightSquare = (rank: Rank, file: File) => {
 };
 
 export const getValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
+  const potentialMoves = getValidMovesInternal(piece, board);
+
+  return potentialMoves.filter((move) => {
+    const potentialBoard = board.filter(
+      (x) =>
+        !(
+          x.position.rank === piece.position.rank &&
+          x.position.file === piece.position.file
+        ) && !(x.position.rank === move.rank && x.position.file === move.file)
+    );
+
+    potentialBoard.push({
+      colour: piece?.colour,
+      piece: piece.piece,
+      position: {
+        rank: move.rank,
+        file: move.file,
+      },
+    });
+
+    return !KingInCheck(piece.colour, potentialBoard);
+  });
+};
+
+const KingInCheck = (
+  colour: "WHITE" | "BLACK",
+  board: PiecePosition[]
+): Boolean => {
+  const kingPosition = board.find(
+    (x) => x.piece === "KING" && x.colour === colour
+  );
+
+  return board
+    .filter((x) => x.colour !== colour)
+    .flatMap((x) => getValidMovesInternal(x, board))
+    .some(
+      (x) =>
+        x.file === kingPosition?.position.file &&
+        x.rank === kingPosition?.position.rank
+    );
+};
+
+export const getValidMovesInternal = (
+  piece: PiecePosition,
+  board: PiecePosition[]
+) => {
   switch (piece.piece) {
     case "PAWN":
       return getPawnValidMoves(piece, board);
@@ -360,5 +406,6 @@ const getKingValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     }
   });
 
+  //TODO Castling
   return validMoves;
 };
