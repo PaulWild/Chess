@@ -22,6 +22,8 @@ export const getValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
       return getBishopValidMoves(piece, board);
     case "QUEEN":
       return getQueenValidMoves(piece, board);
+    case "KNIGHT":
+      return getKnightValidMoves(piece, board);
     default:
       return getAllBoardPositions();
   }
@@ -275,4 +277,45 @@ const getQueenValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
   return getRookValidMoves(piece, board).concat(
     getBishopValidMoves(piece, board)
   );
+};
+
+const getKnightValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
+  const validMoves: Position[] = [];
+  const moveDeltas = [
+    [1, 2],
+    [2, 1],
+    [-1, 2],
+    [-2, 1],
+    [-1, -2],
+    [-2, -1],
+    [1, -2],
+    [2, -1],
+  ];
+
+  const file = FileArray.indexOf(piece.position.file);
+  const rank = piece.position.rank;
+
+  moveDeltas.forEach(([rankDelta, fileDelta]) => {
+    const newFile = file + fileDelta;
+    const newRank = rank + rankDelta;
+    if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
+      return;
+    }
+
+    const pieceAt = getPieceAt(
+      { rank: newRank as Rank, file: FileArray[newFile] },
+      board
+    );
+
+    if (pieceAt && pieceAt.colour !== piece.colour) {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+      return;
+    } else if (pieceAt) {
+      return;
+    } else {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+    }
+  });
+
+  return validMoves;
 };
