@@ -18,12 +18,12 @@ const InitialBoard: PiecePosition[] = [
   },
   {
     position: { rank: 1, file: "d" },
-    piece: "KING",
+    piece: "QUEEN",
     colour: "WHITE",
   },
   {
     position: { rank: 1, file: "e" },
-    piece: "QUEEN",
+    piece: "KING",
     colour: "WHITE",
   },
   {
@@ -98,12 +98,12 @@ const InitialBoard: PiecePosition[] = [
   },
   {
     position: { rank: 8, file: "d" },
-    piece: "KING",
+    piece: "QUEEN",
     colour: "BLACK",
   },
   {
     position: { rank: 8, file: "e" },
-    piece: "QUEEN",
+    piece: "KING",
     colour: "BLACK",
   },
   {
