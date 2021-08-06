@@ -574,7 +574,13 @@ const getKingValidMoves = (
     });
 
     if (canShortCastle)
-      validMoves.push({ move: "Castle", type: "SHORT", colour: "WHITE" });
+      validMoves.push({
+        move: "Castle",
+        type: "SHORT",
+        colour: piece.colour,
+        rank: rank,
+        file: FileArray[file + 2],
+      });
   }
 
   //short Castle.
@@ -582,7 +588,7 @@ const getKingValidMoves = (
     (x) =>
       x.piece === "ROOK" &&
       x.colour === colour &&
-      x.position.file === "h" &&
+      x.position.file === "a" &&
       x.moved === false
   );
 
@@ -593,7 +599,7 @@ const getKingValidMoves = (
       [0, -2],
     ];
 
-    const canShortCastle = moveDeltas.every(([rankDelta, fileDelta]) => {
+    const canLongCastle = moveDeltas.every(([rankDelta, fileDelta]) => {
       const newFile = file + fileDelta;
       const newRank = rank + rankDelta;
 
@@ -625,8 +631,14 @@ const getKingValidMoves = (
       return false;
     });
 
-    if (canShortCastle)
-      validMoves.push({ move: "Castle", type: "LONG", colour: "WHITE" });
+    if (canLongCastle)
+      validMoves.push({
+        move: "Castle",
+        type: "LONG",
+        colour: piece.colour,
+        rank: rank,
+        file: FileArray[file - 2],
+      });
   }
 
   return validMoves;

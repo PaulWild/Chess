@@ -1,7 +1,7 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import { getValidMoves } from "../engine/board";
 import InitialBoard from "../engine/initial-board";
-import { File, PiecePosition, Position, Rank } from "../engine/types";
+import { File, PiecePosition, Rank } from "../engine/types";
 
 const initialState: State = { board: InitialBoard };
 
@@ -78,44 +78,85 @@ const reducer = (state: State, action: Action): State => {
       const validMoves = getValidMoves(piece, state.board);
 
       console.log(validMoves);
-      if (
-        !validMoves.some(
-          (x) =>
-            (x as Position) &&
-            state.threatenedSquare?.rank === (x as Position).rank &&
-            state.threatenedSquare?.file === (x as Position).file
-        )
-      ) {
+
+      const move = validMoves.find(
+        (m) =>
+          m.file === state.threatenedSquare?.file &&
+          m.rank === state.threatenedSquare?.rank
+      );
+
+      if (!move) {
         return {
           board: state.board,
         };
       }
 
-      const board = state.board.filter(
-        (x) =>
-          !(
-            x.position.rank === state.activePiece?.rank &&
-            x.position.file === state.activePiece?.file
-          ) &&
-          !(
-            x.position.rank === state.threatenedSquare?.rank &&
-            x.position.file === state.threatenedSquare?.file
-          )
-      );
+      switch (move.move) {
+        case "Castle":
+          console.log(move);
+          const rookFile = move.type === "SHORT" ? "h" : "a";
+          const rookRank = move.colour === "WHITE" ? 1 : 8;
 
-      board.push({
-        colour: piece?.colour,
-        piece: piece.piece,
-        moved: true,
-        position: {
-          rank: state.threatenedSquare?.rank,
-          file: state.threatenedSquare?.file,
-        },
-      });
+          const board1 = state.board.filter(
+            (x) =>
+              !(
+                x.position.rank === state.activePiece?.rank &&
+                x.position.file === state.activePiece?.file
+              ) &&
+              !(x.position.rank === rookRank && x.position.file === rookFile)
+          );
 
-      return {
-        board,
-      };
+          const rookFileNew = move.type === "SHORT" ? "f" : "d";
+
+          board1.push({
+            colour: piece?.colour,
+            piece: "ROOK",
+            moved: true,
+            position: {
+              rank: rookRank,
+              file: rookFileNew,
+            },
+          });
+
+          board1.push({
+            colour: piece?.colour,
+            piece: piece.piece,
+            moved: true,
+            position: {
+              rank: state.threatenedSquare?.rank,
+              file: state.threatenedSquare?.file,
+            },
+          });
+          return {
+            board: board1,
+          };
+        case "Move":
+          const board = state.board.filter(
+            (x) =>
+              !(
+                x.position.rank === state.activePiece?.rank &&
+                x.position.file === state.activePiece?.file
+              ) &&
+              !(
+                x.position.rank === state.threatenedSquare?.rank &&
+                x.position.file === state.threatenedSquare?.file
+              )
+          );
+
+          board.push({
+            colour: piece?.colour,
+            piece: piece.piece,
+            moved: true,
+            position: {
+              rank: state.threatenedSquare?.rank,
+              file: state.threatenedSquare?.file,
+            },
+          });
+
+          return {
+            board,
+          };
+      }
     }
   }
 };

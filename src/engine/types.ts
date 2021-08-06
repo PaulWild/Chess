@@ -22,6 +22,6 @@ export type Castle = {
   move: "Castle";
   type: "SHORT" | "LONG";
   colour: "WHITE" | "BLACK";
-};
+} & Position;
 
 export type ValidMoves = (StandardMove | Castle)[];
