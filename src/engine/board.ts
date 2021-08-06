@@ -18,6 +18,10 @@ export const getValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
       return getPawnValidMoves(piece, board);
     case "ROOK":
       return getRookValidMoves(piece, board);
+    case "BISHOP":
+      return getBishopValidMoves(piece, board);
+    case "QUEEN":
+      return getQueenValidMoves(piece, board);
     default:
       return getAllBoardPositions();
   }
@@ -30,10 +34,10 @@ const getPieceAt = (position: Position, board: PiecePosition[]) => {
   );
 };
 
-function getPawnValidMoves(
+const getPawnValidMoves = (
   piece: PiecePosition,
   board: PiecePosition[]
-): Position[] {
+): Position[] => {
   const startRank = piece.colour === "WHITE" ? 2 : 7;
   const increment = piece.colour === "WHITE" ? 1 : -1;
   const steps = piece.position.rank === startRank ? 2 : 1;
@@ -92,7 +96,7 @@ function getPawnValidMoves(
 
   //TODO: EN-Passant
   return validMoves;
-}
+};
 
 const getAllBoardPositions = (): Position[] => {
   return RankArray.flatMap((rank) => FileArray.map((file) => ({ rank, file })));
@@ -169,4 +173,110 @@ const getRookValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
     }
   }
   return validMoves;
+};
+
+const getBishopValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
+  const validMoves: Position[] = [];
+
+  const file = FileArray.indexOf(piece.position.file);
+  const rank = piece.position.rank;
+
+  for (let i = 1; i < 8; i++) {
+    const newFile = file - i;
+    const newRank = rank - i;
+
+    if (newRank < 1 || newFile < 0) {
+      break;
+    }
+    const pieceAt = getPieceAt(
+      { rank: newRank as Rank, file: FileArray[newFile] },
+      board
+    );
+
+    if (pieceAt && pieceAt.colour !== piece.colour) {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+      break;
+    } else if (pieceAt) {
+      break;
+    } else {
+      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+    }
+  }
+  for (let i = 1; i < 8; i++) {
+    const newFile = file - i;
+    const newRank = rank + i;
+
+    if (newRank > 8 || newFile < 0) {
+      break;
+    }
+    const pieceAt = getPieceAt(
+      { rank: newRank as Rank, file: FileArray[newFile] },
+      board
+    );
+
+    if (pieceAt && pieceAt.colour !== piece.colour) {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+      break;
+    } else if (pieceAt) {
+      break;
+    } else {
+      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+    }
+  }
+
+  for (let i = 1; i < 8; i++) {
+    const newFile = file + i;
+    const newRank = rank - i;
+
+    if (newRank < 1 || newFile > 7) {
+      break;
+    }
+    const pieceAt = getPieceAt(
+      { rank: newRank as Rank, file: FileArray[newFile] },
+      board
+    );
+
+    if (pieceAt && pieceAt.colour !== piece.colour) {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+      break;
+    } else if (pieceAt) {
+      break;
+    } else {
+      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+    }
+  }
+
+  for (let i = 1; i < 8; i++) {
+    const newFile = file + i;
+    const newRank = rank + i;
+
+    if (newRank > 8 || newFile > 7) {
+      break;
+    }
+    const pieceAt = getPieceAt(
+      { rank: newRank as Rank, file: FileArray[newFile] },
+      board
+    );
+
+    if (pieceAt && pieceAt.colour !== piece.colour) {
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+      break;
+    } else if (pieceAt) {
+      break;
+    } else {
+      console.log(`newFile: ${newFile}, newRank: ${newRank}`);
+      validMoves.push({ rank: newRank as Rank, file: FileArray[newFile] });
+    }
+  }
+  return validMoves;
+};
+
+// Queen = Bishop + Rook
+const getQueenValidMoves = (piece: PiecePosition, board: PiecePosition[]) => {
+  return getRookValidMoves(piece, board).concat(
+    getBishopValidMoves(piece, board)
+  );
 };
