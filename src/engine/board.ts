@@ -20,23 +20,6 @@ export const isLightSquare = (rank: Rank, file: File) => {
   return false;
 };
 
-export const KingInCheck = (
-  colour: "WHITE" | "BLACK",
-  board: Board
-): Boolean => {
-  const kingPosition = board.board.find(
-    (x) => x.piece.pieceType === "KING" && x.piece.colour === colour
-  );
-
-  return board.board
-    .filter((x) => x.piece.colour !== colour)
-    .flatMap((x) => x.piece.getValidMoves(x.position, board))
-    .some(
-      (x) =>
-        (x as Position).file === kingPosition?.position.file &&
-        (x as Position).rank === kingPosition?.position.rank
-    );
-};
 export class Board {
   private _board: PiecePosition[];
 
