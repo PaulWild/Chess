@@ -130,6 +130,7 @@ const reducer = (state: State, action: Action): State => {
           return {
             board: board1,
           };
+        case "Capture":
         case "Move":
           const board = state.board.filter(
             (x) =>

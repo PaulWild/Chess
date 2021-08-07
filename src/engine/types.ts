@@ -18,10 +18,16 @@ export type StandardMove = {
   move: "Move";
 } & Position;
 
+export type Capture = {
+  move: "Capture";
+} & Position;
+
 export type Castle = {
   move: "Castle";
   type: "SHORT" | "LONG";
   colour: "WHITE" | "BLACK";
 } & Position;
 
-export type ValidMoves = (StandardMove | Castle)[];
+export type ValidMove = StandardMove | Capture | Castle;
+
+export type ValidMoves = ValidMove[];
