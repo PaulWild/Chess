@@ -1,9 +1,11 @@
 import { BasePiece } from "./basePiece";
-import { FileArray, KingInCheck } from "./board";
-import { PiecePosition, Rank, ValidMoves } from "./types";
+import { Board, FileArray } from "./board";
+import { PieceType, Position, Rank, ValidMoves } from "./types";
 
 export class King extends BasePiece {
-  getValidMoves = (piece: PiecePosition) => {
+  pieceType = "KING" as PieceType;
+
+  getValidMoves = (position: Position, board: Board) => {
     let validMoves: ValidMoves = [];
     const moveDeltas = [
       [1, 1],
@@ -16,28 +18,24 @@ export class King extends BasePiece {
       [1, -1],
     ];
 
-    const file = FileArray.indexOf(piece.position.file);
-    const rank = piece.position.rank;
+    const file = FileArray.indexOf(position.file);
+    const rank = position.rank;
 
     validMoves = validMoves.concat(
       moveDeltas
         .map(([rankDelta, fileDelta]) =>
-          this.getMoveAtPosition(piece, rankDelta, fileDelta)
+          board.getMoveAtPosition(position, this, rankDelta, fileDelta)
         )
-        .filter(this.isStandardMove)
+        .filter(board.isStandardMove)
     );
 
-    //short Castle.
-    const colour = piece.colour;
-    const shortRook = this.board.find(
-      (x) =>
-        x.piece === "ROOK" &&
-        x.colour === colour &&
-        x.position.file === "h" &&
-        x.moved === false
-    );
+    if (this.moved) {
+      return validMoves;
+    }
 
-    if (shortRook && !piece.moved) {
+    const shortRook = board.getPieceAt({ rank: position.rank, file: "h" });
+
+    if (shortRook && !shortRook.piece.moved) {
       const moveDeltas = [
         [0, 0],
         [0, 1],
@@ -48,31 +46,33 @@ export class King extends BasePiece {
         const newFile = file + fileDelta;
         const newRank = rank + rankDelta;
 
-        const pieceAt = this.board.find(
-          (x) =>
-            x.position.file === FileArray[newFile] &&
-            x.position.rank === newRank
-        );
+        const pieceAt = board.getPieceAt({
+          file: FileArray[newFile],
+          rank: newRank as Rank,
+        });
+
         if (!pieceAt || (rankDelta === 0 && fileDelta === 0)) {
-          const potentialBoard = this.board.filter(
+          const potentialBoard = board.board.filter(
             (x) =>
               !(
-                x.position.rank === piece.position.rank &&
-                x.position.file === piece.position.file
+                x.position.rank === position.rank &&
+                x.position.file === position.file
               )
           );
 
+          var p = new King(this.colour);
+          p.setMoved();
           potentialBoard.push({
-            colour: piece?.colour,
-            piece: piece.piece,
-            moved: true,
+            piece: p,
             position: {
               rank: newRank as Rank,
               file: FileArray[newFile],
             },
           });
 
-          return !KingInCheck(piece.colour, potentialBoard);
+          const b = new Board(potentialBoard);
+
+          return !b.KingInCheck(this.colour);
         }
         return false;
       });
@@ -81,22 +81,15 @@ export class King extends BasePiece {
         validMoves.push({
           move: "Castle",
           type: "SHORT",
-          colour: piece.colour,
+          colour: this.colour,
           rank: rank,
           file: FileArray[file + 2],
         });
     }
 
-    //short Castle.
-    const longRook = this.board.find(
-      (x) =>
-        x.piece === "ROOK" &&
-        x.colour === colour &&
-        x.position.file === "a" &&
-        x.moved === false
-    );
+    const longRook = board.getPieceAt({ rank: position.rank, file: "h" });
 
-    if (longRook && !piece.moved) {
+    if (longRook && !longRook.piece.moved) {
       const moveDeltas = [
         [0, 0],
         [0, -1],
@@ -107,31 +100,33 @@ export class King extends BasePiece {
         const newFile = file + fileDelta;
         const newRank = rank + rankDelta;
 
-        const pieceAt = this.board.find(
-          (x) =>
-            x.position.file === FileArray[newFile] &&
-            x.position.rank === newRank
-        );
+        const pieceAt = board.getPieceAt({
+          file: FileArray[newFile],
+          rank: newRank as Rank,
+        });
+
         if (!pieceAt || (rankDelta === 0 && fileDelta === 0)) {
-          const potentialBoard = this.board.filter(
+          const potentialBoard = board.board.filter(
             (x) =>
               !(
-                x.position.rank === piece.position.rank &&
-                x.position.file === piece.position.file
+                x.position.rank === position.rank &&
+                x.position.file === position.file
               )
           );
 
+          var p = new King(this.colour);
+          p.setMoved();
           potentialBoard.push({
-            colour: piece?.colour,
-            piece: piece.piece,
-            moved: true,
+            piece: p,
             position: {
               rank: newRank as Rank,
               file: FileArray[newFile],
             },
           });
 
-          return !KingInCheck(piece.colour, potentialBoard);
+          const b = new Board(potentialBoard);
+
+          return !b.KingInCheck(this.colour);
         }
         return false;
       });
@@ -140,7 +135,7 @@ export class King extends BasePiece {
         validMoves.push({
           move: "Castle",
           type: "LONG",
-          colour: piece.colour,
+          colour: this.colour,
           rank: rank,
           file: FileArray[file - 2],
         });

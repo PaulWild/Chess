@@ -1,13 +1,16 @@
 import { BasePiece } from "./basePiece";
 import { Bishop } from "./bishop";
+import { Board } from "./board";
 import { Rook } from "./rook";
-import { PiecePosition } from "./types";
+import { PieceType, Position } from "./types";
 
 export class Queen extends BasePiece {
-  getValidMoves = (piece: PiecePosition) => {
+  pieceType = "QUEEN" as PieceType;
+
+  getValidMoves = (position: Position, board: Board) => {
     return [
-      ...new Rook(this.board).getValidMoves(piece),
-      ...new Bishop(this.board).getValidMoves(piece),
+      ...new Rook(this.colour).getValidMoves(position, board),
+      ...new Bishop(this.colour).getValidMoves(position, board),
     ];
   };
 }

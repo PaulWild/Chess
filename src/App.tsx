@@ -10,17 +10,20 @@ import {
   DraggableContextProvider,
 } from "./components/game-context";
 import { useContext } from "react";
-import { File, PiecePosition, Rank } from "./engine/types";
-import { FileArray, isLightSquare, RankArray } from "./engine/board";
+import { File, Rank } from "./engine/types";
+import {
+  FileArray,
+  isLightSquare,
+  RankArray,
+  Board as GameBoard,
+} from "./engine/board";
 
-const getPieceAt = (rank: Rank, file: File, currentBoard: PiecePosition[]) => {
-  const piecePoistion = currentBoard.find(
-    (x) => x.position.file === file && x.position.rank === rank
-  );
+const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
+  const piecePoistion = currentBoard.getPieceAt({ rank, file });
 
   if (piecePoistion) {
-    const set = piecePoistion.colour === "WHITE" ? White : Black;
-    switch (piecePoistion.piece) {
+    const set = piecePoistion.piece.colour === "WHITE" ? White : Black;
+    switch (piecePoistion.piece.pieceType) {
       case "BISHOP":
         return set.Bishop;
       case "KING":

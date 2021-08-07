@@ -1,13 +1,16 @@
 import { BasePiece } from "./basePiece";
-import { PiecePosition } from "./types";
+import { Board } from "./board";
+import { PieceType, Position, ValidMoves } from "./types";
 
 export class Rook extends BasePiece {
-  getValidMoves = (piece: PiecePosition) => {
+  pieceType = "ROOK" as PieceType;
+
+  getValidMoves(from: Position, board: Board): ValidMoves {
     return [
-      ...this.getMovesOnLine(piece, 1, 0),
-      ...this.getMovesOnLine(piece, 0, 1),
-      ...this.getMovesOnLine(piece, 0, -1),
-      ...this.getMovesOnLine(piece, -1, 0),
+      ...board.getMovesOnLine(from, this, 1, 0),
+      ...board.getMovesOnLine(from, this, 0, 1),
+      ...board.getMovesOnLine(from, this, 0, -1),
+      ...board.getMovesOnLine(from, this, -1, 0),
     ];
-  };
+  }
 }

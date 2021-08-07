@@ -1,72 +1,36 @@
 import { BasePiece } from "./basePiece";
-import { FileArray } from "./board";
-import { PiecePosition, Rank, StandardMove } from "./types";
+import { Board } from "./board";
+import { PieceType, Position, ValidMoves } from "./types";
 
 export class Pawn extends BasePiece {
-  getValidMoves = (piece: PiecePosition) => {
-    const startRank = piece.colour === "WHITE" ? 2 : 7;
-    const increment = piece.colour === "WHITE" ? 1 : -1;
-    const steps = piece.position.rank === startRank ? 2 : 1;
+  pieceType = "PAWN" as PieceType;
 
-    const validMoves: StandardMove[] = [];
-    for (let i = 1; i <= steps; i++) {
-      const newRank = (piece.position.rank + i * increment) as Rank;
+  getValidMoves = (position: Position, board: Board) => {
+    const increment = this.colour === "WHITE" ? 1 : -1;
 
-      if (newRank) {
-        const pieceAt = this.getPieceAt({
-          rank: newRank,
-          file: piece?.position.file,
-        });
+    const moveDeltas = this.moved
+      ? [[1 * increment, 0]]
+      : [
+          [1 * increment, 0],
+          [2 * increment, 0],
+        ];
 
-        if (pieceAt) {
-          break;
-        }
+    const captureDeltas = [
+      [increment, 1],
+      [increment, -1],
+    ];
 
-        validMoves.push({
-          move: "Move",
-          rank: newRank,
-          file: piece.position.file,
-        });
-      }
-    }
+    const moves: ValidMoves = moveDeltas
+      .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
+      .filter(board.isStandardMove)
+      .filter((x) => x.move === "Move");
 
-    if (piece.position.file !== "a") {
-      const fileToCheck = FileArray[FileArray.indexOf(piece.position.file) - 1];
-      const rankToCheck = (piece.position.rank + 1 * increment) as Rank;
-
-      const leftFilePiece = this.getPieceAt({
-        rank: rankToCheck,
-        file: fileToCheck,
-      });
-
-      if (leftFilePiece && leftFilePiece.colour !== piece.colour) {
-        validMoves.push({
-          move: "Move",
-          rank: rankToCheck,
-          file: fileToCheck,
-        });
-      }
-    }
-
-    if (piece.position.file !== "h") {
-      const fileToCheck = FileArray[FileArray.indexOf(piece.position.file) + 1];
-      const rankToCheck = (piece.position.rank + 1 * increment) as Rank;
-
-      const leftFilePiece = this.getPieceAt({
-        rank: rankToCheck,
-        file: fileToCheck,
-      });
-
-      if (leftFilePiece && leftFilePiece.colour !== piece.colour) {
-        validMoves.push({
-          move: "Move",
-          rank: rankToCheck,
-          file: fileToCheck,
-        });
-      }
-    }
+    const captures: ValidMoves = captureDeltas
+      .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
+      .filter(board.isStandardMove)
+      .filter((x) => x.move === "Capture");
 
     //TODO: EN-Passant
-    return validMoves;
+    return [...moves, ...captures];
   };
 }

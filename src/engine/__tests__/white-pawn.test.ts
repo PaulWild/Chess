@@ -1,17 +1,16 @@
-import { getValidMoves } from "../board";
+import { Board, getValidMoves } from "../board";
+import { Pawn } from "../pawn";
 import { PiecePosition } from "../types";
 
 describe("White Pawns", () => {
   describe("when not moved", () => {
     const piece: PiecePosition = {
       position: { rank: 2, file: "d" },
-      piece: "PAWN",
-      colour: "WHITE",
-      moved: false,
+      piece: new Pawn("WHITE"),
     };
 
     it("can move forward twice on first rank", () => {
-      const board = [piece];
+      const board = new Board([piece]);
       const moves = getValidMoves(piece, board);
 
       const expectedMoves = [
@@ -19,88 +18,70 @@ describe("White Pawns", () => {
         { file: "d", move: "Move", rank: 4 },
       ];
 
-      expect(moves).toEqual(expectedMoves);
+      expect(moves).toEqual(expect.arrayContaining(expectedMoves));
     });
   });
 
   describe("when already moved", () => {
     const piece: PiecePosition = {
       position: { rank: 3, file: "d" },
-      piece: "PAWN",
-      colour: "WHITE",
-      moved: true,
+      piece: new Pawn("WHITE"),
     };
 
     it("can move forward once on after moving", () => {
-      const board = [piece];
+      const board = new Board([piece]);
       const moves = getValidMoves(piece, board);
 
       const expectedMoves = [{ file: "d", move: "Move", rank: 4 }];
 
-      expect(moves).toEqual(expectedMoves);
+      expect(moves).toEqual(expect.arrayContaining(expectedMoves));
     });
 
     it("capture diagonally", () => {
-      const board: PiecePosition[] = [
+      const board = new Board([
         piece,
         {
           position: { rank: 4, file: "c" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 4, file: "d" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 4, file: "e" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 3, file: "c" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 3, file: "e" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 2, file: "c" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 2, file: "d" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
         {
           position: { rank: 2, file: "e" },
-          piece: "PAWN",
-          colour: "BLACK",
-          moved: true,
+          piece: new Pawn("BLACK"),
         },
-      ];
+      ]);
 
       const moves = getValidMoves(piece, board);
 
       const expectedMoves = [
-        { move: "Move", rank: 4, file: "c" },
-        { move: "Move", rank: 4, file: "e" },
+        { move: "Capture", rank: 4, file: "c" },
+        { move: "Capture", rank: 4, file: "e" },
       ];
 
-      expect(moves).toEqual(expectedMoves);
+      expect(moves).toEqual(expect.arrayContaining(expectedMoves));
     });
   });
 });

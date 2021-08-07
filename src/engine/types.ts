@@ -1,9 +1,19 @@
+import { BasePiece } from "./basePiece";
+
 export type PiecePosition = {
   position: Position;
-  piece: "ROOK" | "KNIGHT" | "BISHOP" | "KING" | "QUEEN" | "PAWN";
-  colour: "WHITE" | "BLACK";
-  moved: boolean;
+  piece: BasePiece;
 };
+
+export type PieceType =
+  | "ROOK"
+  | "KNIGHT"
+  | "BISHOP"
+  | "KING"
+  | "QUEEN"
+  | "PAWN";
+
+export type PieceColour = "WHITE" | "BLACK";
 
 export type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -27,6 +37,10 @@ export type Castle = {
   type: "SHORT" | "LONG";
   colour: "WHITE" | "BLACK";
 } & Position;
+
+export type InvalidMove = {
+  move: "INVALID";
+};
 
 export type ValidMove = StandardMove | Capture | Castle;
 

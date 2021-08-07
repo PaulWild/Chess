@@ -1,122 +1,70 @@
+import { Board } from "./board";
 import {
-  File,
-  PiecePosition,
+  InvalidMove,
+  PieceColour,
+  PieceType,
   Position,
-  Rank,
   ValidMove,
   ValidMoves,
 } from "./types";
 
 interface IValidMoves {
-  getValidMoves(piece: PiecePosition): ValidMoves;
+  getValidMoves(position: Position, board: Board): ValidMoves;
+
+  canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove;
 }
 
 interface IPiece {
-  type: "ROOK" | "KNIGHT" | "BISHOP" | "KING" | "QUEEN" | "PAWN";
-  colour: "WHITE" | "BLACK";
+  pieceType: PieceType;
+  colour: PieceColour;
+  moved: boolean;
 }
 
-const FileArray: File[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
+export abstract class BasePiece implements IValidMoves, IPiece {
+  abstract pieceType: PieceType;
+  colour: PieceColour;
+  moved: boolean;
 
-export abstract class BasePiece implements IValidMoves {
-  board: PiecePosition[];
-  constructor(board: PiecePosition[]) {
-    this.board = board;
+  setMoved() {
+    this.moved = true;
   }
 
-  abstract getValidMoves(piece: PiecePosition): ValidMoves;
+  constructor(colour: PieceColour) {
+    this.colour = colour;
+    this.moved = false;
+  }
 
-  getMoveAtPosition = (
-    piece: PiecePosition,
-    rankDelta: number,
-    fileDelta: number
-  ): ValidMove | undefined => {
-    const newFile = FileArray.indexOf(piece.position.file) + fileDelta;
-    const newRank = piece.position.rank + rankDelta;
+  canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove {
+    const allMoves = this.getValidMoves(from, board);
 
-    if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-      return;
-    }
-    return this.checkPosition(
-      piece.colour,
-      newRank as Rank,
-      FileArray[newFile]
+    const potentialMove = allMoves.find(
+      (position) => position.file === to.file && position.rank === to.rank
     );
-  };
 
-  getMovesOnLine = (
-    piece: PiecePosition,
-    rankDelta: number,
-    fileDelta: number
-  ): ValidMoves => {
-    const validMoves = [];
-    for (let i = 1; i < 8; i++) {
-      const newFile = FileArray.indexOf(piece.position.file) + fileDelta * i;
-      const newRank = piece.position.rank + rankDelta * i;
+    if (!potentialMove) return { move: "INVALID" };
 
-      if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-        break;
-      }
-
-      const move = this.checkPosition(
-        piece.colour,
-        newRank as Rank,
-        FileArray[newFile]
-      );
-
-      if (move === undefined) {
-        break;
-      }
-
-      validMoves.push(move);
-
-      if (move.move === "Capture") {
-        break;
-      }
-    }
-    return validMoves;
-  };
-
-  checkPosition = (
-    colour: "WHITE" | "BLACK",
-    rank: Rank,
-    file: File
-  ): ValidMove | undefined => {
-    if (this.takeAt(rank, file, colour)) {
-      return {
-        move: "Capture",
-        rank: rank,
-        file: file,
-      };
-    }
-    if (this.moveTo(rank, file)) {
-      return {
-        move: "Move",
-        rank: rank,
-        file: file,
-      };
-    }
-    return undefined;
-  };
-
-  isStandardMove = (item: ValidMove | undefined): item is ValidMove => {
-    return !!item;
-  };
-
-  takeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
-    const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
-    return pieceAt !== undefined && pieceAt.colour !== colour;
-  };
-
-  moveTo = (rank: Rank, file: File): boolean => {
-    const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
-    return pieceAt === undefined;
-  };
-
-  getPieceAt = (position: Position) => {
-    return this.board.find(
+    const potentialBoard = board.board.filter(
       (x) =>
-        x.position.rank === position.rank && x.position.file === position?.file
+        !(x.position.rank === from.rank && x.position.file === from.file) &&
+        !(x.position.rank === to.rank && x.position.file === to.file)
     );
-  };
+
+    potentialBoard.push({
+      piece: this,
+      position: {
+        rank: to.rank,
+        file: to.file,
+      },
+    });
+
+    const m: ValidMove | InvalidMove = !new Board(potentialBoard).KingInCheck(
+      this.colour
+    )
+      ? potentialMove
+      : { move: "INVALID" };
+
+    return m;
+  }
+
+  abstract getValidMoves(from: Position, board: Board): ValidMoves;
 }

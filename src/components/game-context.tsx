@@ -1,9 +1,10 @@
 import React, { useReducer, createContext, Dispatch } from "react";
-import { getValidMoves } from "../engine/board";
+import { Board } from "../engine/board";
 import InitialBoard from "../engine/initial-board";
-import { File, PiecePosition, Rank } from "../engine/types";
+import { Rook } from "../engine/rook";
+import { File, Rank } from "../engine/types";
 
-const initialState: State = { board: InitialBoard };
+const initialState: State = { board: new Board(InitialBoard) };
 
 const GameContext = createContext<[State, Dispatch<Action>]>([
   initialState,
@@ -13,7 +14,7 @@ const GameContext = createContext<[State, Dispatch<Action>]>([
 type State = {
   activePiece?: ActivePiece;
   threatenedSquare?: { rank: Rank; file: File };
-  board: PiecePosition[];
+  board: Board;
 };
 
 type ActivePiece = {
@@ -66,73 +67,30 @@ const reducer = (state: State, action: Action): State => {
     case "MOVE": {
       if (!state.threatenedSquare) throw new Error("state is corrupted");
       if (!state.activePiece) throw new Error("state is corrupted");
-      //Get moving piece
-      const piece = state.board.find(
-        (x) =>
-          x.position.rank === state.activePiece?.rank &&
-          x.position.file === state.activePiece?.file
-      );
+
+      const from = {
+        file: state.activePiece.file,
+        rank: state.activePiece.rank,
+      };
+
+      const to = {
+        file: state.threatenedSquare.file,
+        rank: state.threatenedSquare.rank,
+      };
+
+      const piece = state.board.getPieceAt(from);
 
       if (!piece) throw new Error("state is corrupted");
 
-      const validMoves = getValidMoves(piece, state.board);
-
-      console.log(validMoves);
-
-      const move = validMoves.find(
-        (m) =>
-          m.file === state.threatenedSquare?.file &&
-          m.rank === state.threatenedSquare?.rank
-      );
-
-      if (!move) {
-        return {
-          board: state.board,
-        };
-      }
+      const move = piece.piece.canMove(from, to, state.board);
+      console.log(move);
 
       switch (move.move) {
-        case "Castle":
-          console.log(move);
-          const rookFile = move.type === "SHORT" ? "h" : "a";
-          const rookRank = move.colour === "WHITE" ? 1 : 8;
-
-          const board1 = state.board.filter(
-            (x) =>
-              !(
-                x.position.rank === state.activePiece?.rank &&
-                x.position.file === state.activePiece?.file
-              ) &&
-              !(x.position.rank === rookRank && x.position.file === rookFile)
-          );
-
-          const rookFileNew = move.type === "SHORT" ? "f" : "d";
-
-          board1.push({
-            colour: piece?.colour,
-            piece: "ROOK",
-            moved: true,
-            position: {
-              rank: rookRank,
-              file: rookFileNew,
-            },
-          });
-
-          board1.push({
-            colour: piece?.colour,
-            piece: piece.piece,
-            moved: true,
-            position: {
-              rank: state.threatenedSquare?.rank,
-              file: state.threatenedSquare?.file,
-            },
-          });
-          return {
-            board: board1,
-          };
-        case "Capture":
+        case "INVALID":
+          return state;
         case "Move":
-          const board = state.board.filter(
+        case "Capture":
+          const board = state.board.board.filter(
             (x) =>
               !(
                 x.position.rank === state.activePiece?.rank &&
@@ -144,10 +102,9 @@ const reducer = (state: State, action: Action): State => {
               )
           );
 
+          piece.piece.setMoved();
           board.push({
-            colour: piece?.colour,
             piece: piece.piece,
-            moved: true,
             position: {
               rank: state.threatenedSquare?.rank,
               file: state.threatenedSquare?.file,
@@ -155,7 +112,44 @@ const reducer = (state: State, action: Action): State => {
           });
 
           return {
-            board,
+            board: new Board(board),
+          };
+        case "Castle":
+          const b2 = state.board.board.filter(
+            (x) =>
+              !(
+                x.position.rank === state.activePiece?.rank &&
+                x.position.file === state.activePiece?.file
+              ) &&
+              !(
+                x.position.rank === state.threatenedSquare?.rank &&
+                x.position.file === state.threatenedSquare?.file
+              ) &&
+              !(
+                x.position.rank === piece.position.rank &&
+                x.position.file === (move.type === "SHORT" ? "h" : "a")
+              )
+          );
+
+          piece.piece.setMoved();
+          b2.push({
+            piece: piece.piece,
+            position: {
+              rank: state.threatenedSquare?.rank,
+              file: state.threatenedSquare?.file,
+            },
+          });
+
+          const rook = new Rook(piece.piece.colour);
+          b2.push({
+            piece: rook,
+            position: {
+              rank: piece.position.rank,
+              file: move.type === "SHORT" ? "f" : "d",
+            },
+          });
+          return {
+            board: new Board(b2),
           };
       }
     }

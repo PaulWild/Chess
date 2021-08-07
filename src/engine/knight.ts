@@ -1,8 +1,11 @@
 import { BasePiece } from "./basePiece";
-import { PiecePosition } from "./types";
+import { Board } from "./board";
+import { PieceType, Position, ValidMoves } from "./types";
 
 export class Knight extends BasePiece {
-  getValidMoves = (piece: PiecePosition) => {
+  pieceType = "KNIGHT" as PieceType;
+
+  getValidMoves = (position: Position, board: Board): ValidMoves => {
     const moveDeltas = [
       [1, 2],
       [2, 1],
@@ -15,7 +18,7 @@ export class Knight extends BasePiece {
     ];
 
     return moveDeltas
-      .map(([rd, fd]) => this.getMoveAtPosition(piece, rd, fd))
-      .filter(this.isStandardMove);
+      .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
+      .filter(board.isStandardMove);
   };
 }
