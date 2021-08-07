@@ -20,41 +20,6 @@ export const isLightSquare = (rank: Rank, file: File) => {
   return false;
 };
 
-export const getValidMoves = (
-  piece: PiecePosition,
-  board: Board
-): ValidMoves => {
-  const potentialMoves = getValidMovesInternal(piece, board);
-
-  return potentialMoves.filter((move) => {
-    if (move.move === "Castle") {
-      return true;
-    }
-    const movePosition = move as Position;
-    const potentialBoard = board.board.filter(
-      (x) =>
-        !(
-          x.position.rank === piece.position.rank &&
-          x.position.file === piece.position.file
-        ) &&
-        !(
-          x.position.rank === movePosition.rank &&
-          x.position.file === movePosition.file
-        )
-    );
-
-    potentialBoard.push({
-      piece: piece.piece,
-      position: {
-        rank: movePosition.rank,
-        file: movePosition.file,
-      },
-    });
-
-    return !KingInCheck(piece.piece.colour, new Board(potentialBoard));
-  });
-};
-
 export const KingInCheck = (
   colour: "WHITE" | "BLACK",
   board: Board
@@ -65,21 +30,13 @@ export const KingInCheck = (
 
   return board.board
     .filter((x) => x.piece.colour !== colour)
-    .flatMap((x) => getValidMovesInternal(x, board))
+    .flatMap((x) => x.piece.getValidMoves(x.position, board))
     .some(
       (x) =>
         (x as Position).file === kingPosition?.position.file &&
         (x as Position).rank === kingPosition?.position.rank
     );
 };
-
-export const getValidMovesInternal = (
-  piece: PiecePosition,
-  board: Board
-): ValidMoves => {
-  return piece.piece.getValidMoves(piece.position, board);
-};
-
 export class Board {
   private _board: PiecePosition[];
 
@@ -87,8 +44,14 @@ export class Board {
     return this._board;
   }
 
-  constructor(initialPositions: PiecePosition[]) {
+  enPassant: PiecePosition | undefined;
+
+  constructor(
+    initialPositions: PiecePosition[],
+    enPassant: PiecePosition | undefined = undefined
+  ) {
     this._board = initialPositions;
+    this.enPassant = enPassant;
   }
 
   getMoveAtPosition = (
@@ -103,11 +66,7 @@ export class Board {
     if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
       return;
     }
-    return this.checkPosition(
-      piece.colour,
-      newRank as Rank,
-      FileArray[newFile]
-    );
+    return this.checkPosition(piece, newRank as Rank, FileArray[newFile]);
   };
 
   getMovesOnLine = (
@@ -126,7 +85,7 @@ export class Board {
       }
 
       const move = this.checkPosition(
-        piece.colour,
+        piece,
         newRank as Rank,
         FileArray[newFile]
       );
@@ -145,18 +104,36 @@ export class Board {
   };
 
   checkPosition = (
-    colour: "WHITE" | "BLACK",
+    piece: BasePiece,
     rank: Rank,
     file: File
   ): ValidMove | undefined => {
-    if (this.takeAt(rank, file, colour)) {
+    if (this.takeAt(rank, file, piece.colour)) {
       return {
         move: "Capture",
         rank: rank,
         file: file,
       };
     }
+    if (this.takeEnPassant(rank, file, piece)) {
+      return {
+        move: "CaptureEnPassant",
+        rank: rank,
+        file: file,
+      };
+    }
     if (this.moveTo(rank, file)) {
+      if (
+        piece.pieceType === "PAWN" &&
+        !piece.moved &&
+        (rank === 4 || rank === 5)
+      ) {
+        return {
+          move: "PawnPush",
+          rank: rank,
+          file: file,
+        };
+      }
       return {
         move: "Move",
         rank: rank,
@@ -173,6 +150,18 @@ export class Board {
   takeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
     const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
     return pieceAt !== undefined && pieceAt.piece.colour !== colour;
+  };
+
+  takeEnPassant = (rank: Rank, file: File, piece: BasePiece): boolean => {
+    if (piece.pieceType !== "PAWN") return false;
+    if (!this.enPassant) return false;
+
+    return (
+      this.enPassant.position.file === file &&
+      this.enPassant.position.rank ===
+        rank + (piece.colour === "WHITE" ? -1 : 1) &&
+      this.enPassant.piece.colour !== piece.colour
+    );
   };
 
   moveTo = (rank: Rank, file: File): boolean => {

@@ -28,8 +28,16 @@ export type StandardMove = {
   move: "Move";
 } & Position;
 
+export type PawnPush = {
+  move: "PawnPush";
+} & Position;
+
 export type Capture = {
   move: "Capture";
+} & Position;
+
+export type CaptureEnPassant = {
+  move: "CaptureEnPassant";
 } & Position;
 
 export type Castle = {
@@ -42,6 +50,11 @@ export type InvalidMove = {
   move: "INVALID";
 };
 
-export type ValidMove = StandardMove | Capture | Castle;
+export type ValidMove =
+  | StandardMove
+  | Capture
+  | Castle
+  | PawnPush
+  | CaptureEnPassant;
 
 export type ValidMoves = ValidMove[];

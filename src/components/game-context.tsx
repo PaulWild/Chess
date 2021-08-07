@@ -89,18 +89,36 @@ const reducer = (state: State, action: Action): State => {
         case "INVALID":
           return state;
         case "Move":
+        case "PawnPush":
+        case "CaptureEnPassant":
         case "Capture":
-          const board = state.board.board.filter(
-            (x) =>
-              !(
-                x.position.rank === state.activePiece?.rank &&
-                x.position.file === state.activePiece?.file
-              ) &&
-              !(
-                x.position.rank === state.threatenedSquare?.rank &&
-                x.position.file === state.threatenedSquare?.file
-              )
-          );
+          let board;
+
+          if (move.move === "CaptureEnPassant") {
+            board = state.board.board.filter(
+              (x) =>
+                !(
+                  x.position.rank === state.activePiece?.rank &&
+                  x.position.file === state.activePiece?.file
+                ) &&
+                !(
+                  x.position.rank === state.board.enPassant?.position.rank &&
+                  x.position.file === state.board.enPassant?.position.file
+                )
+            );
+          } else {
+            board = state.board.board.filter(
+              (x) =>
+                !(
+                  x.position.rank === state.activePiece?.rank &&
+                  x.position.file === state.activePiece?.file
+                ) &&
+                !(
+                  x.position.rank === state.threatenedSquare?.rank &&
+                  x.position.file === state.threatenedSquare?.file
+                )
+            );
+          }
 
           piece.piece.setMoved();
           board.push({
@@ -111,6 +129,16 @@ const reducer = (state: State, action: Action): State => {
             },
           });
 
+          if (move.move === "PawnPush")
+            return {
+              board: new Board(board, {
+                piece: piece.piece,
+                position: {
+                  rank: state.threatenedSquare?.rank,
+                  file: state.threatenedSquare?.file,
+                },
+              }),
+            };
           return {
             board: new Board(board),
           };

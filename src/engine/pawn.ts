@@ -23,14 +23,13 @@ export class Pawn extends BasePiece {
     const moves: ValidMoves = moveDeltas
       .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
       .filter(board.isStandardMove)
-      .filter((x) => x.move === "Move");
+      .filter((x) => x.move === "Move" || x.move === "PawnPush");
 
     const captures: ValidMoves = captureDeltas
       .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
       .filter(board.isStandardMove)
-      .filter((x) => x.move === "Capture");
+      .filter((x) => x.move === "Capture" || x.move === "CaptureEnPassant");
 
-    //TODO: EN-Passant
     return [...moves, ...captures];
   };
 }
