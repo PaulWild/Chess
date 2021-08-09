@@ -9,11 +9,8 @@ export class Pawn extends BasePiece {
     const increment = this.colour === "WHITE" ? 1 : -1;
 
     const moveDeltas = this.moved
-      ? [[1 * increment, 0]]
-      : [
-          [1 * increment, 0],
-          [2 * increment, 0],
-        ];
+      ? [1 * increment]
+      : [1 * increment, 2 * increment];
 
     const captureDeltas = [
       [increment, 1],
@@ -21,7 +18,7 @@ export class Pawn extends BasePiece {
     ];
 
     const moves: ValidMoves = moveDeltas
-      .map(([rd, fd]) => board.getMoveAtPosition(position, this, rd, fd))
+      .map((rd) => board.getMoveAtPosition(position, this, rd, 0))
       .filter(board.isStandardMove)
       .filter((x) => x.move === "Move" || x.move === "PawnPush");
 

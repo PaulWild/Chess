@@ -87,7 +87,9 @@ const reducer = (state: State, action: Action): State => {
 
       switch (move.move) {
         case "INVALID":
-          return state;
+          return {
+            board: state.board,
+          };
         case "Move":
         case "PawnPush":
         case "CaptureEnPassant":
