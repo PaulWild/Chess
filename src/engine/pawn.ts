@@ -5,7 +5,7 @@ import { PieceType, Position, ValidMoves } from "./types";
 export class Pawn extends BasePiece {
   pieceType = "PAWN" as PieceType;
 
-  getValidMoves = (position: Position, board: Board) => {
+  getPotentialMoves = (position: Position, board: Board) => {
     const increment = this.colour === "WHITE" ? 1 : -1;
 
     const moveDeltas = this.moved

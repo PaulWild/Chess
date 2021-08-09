@@ -5,7 +5,7 @@ import { PieceType, Position, ValidMoves } from "./types";
 export class Knight extends BasePiece {
   pieceType = "KNIGHT" as PieceType;
 
-  getValidMoves = (position: Position, board: Board): ValidMoves => {
+  getPotentialMoves = (position: Position, board: Board): ValidMoves => {
     const moveDeltas = [
       [1, 2],
       [2, 1],

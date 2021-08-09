@@ -91,21 +91,21 @@ export class Board {
     rank: Rank,
     file: File
   ): ValidMove | undefined => {
-    if (this.takeAt(rank, file, piece.colour)) {
+    if (this.canTakeAt(rank, file, piece.colour)) {
       return {
         move: "Capture",
         rank: rank,
         file: file,
       };
     }
-    if (this.takeEnPassant(rank, file, piece)) {
+    if (this.canTakeEnPassant(rank, file, piece)) {
       return {
         move: "CaptureEnPassant",
         rank: rank,
         file: file,
       };
     }
-    if (this.moveTo(rank, file)) {
+    if (this.canMoveTo(rank, file)) {
       if (
         piece.pieceType === "PAWN" &&
         !piece.moved &&
@@ -130,12 +130,12 @@ export class Board {
     return !!item;
   };
 
-  takeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
+  canTakeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
     const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
     return pieceAt !== undefined && pieceAt.piece.colour !== colour;
   };
 
-  takeEnPassant = (rank: Rank, file: File, piece: BasePiece): boolean => {
+  canTakeEnPassant = (rank: Rank, file: File, piece: BasePiece): boolean => {
     if (piece.pieceType !== "PAWN") return false;
     if (!this.enPassant) return false;
 
@@ -147,7 +147,7 @@ export class Board {
     );
   };
 
-  moveTo = (rank: Rank, file: File): boolean => {
+  canMoveTo = (rank: Rank, file: File): boolean => {
     const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
     return pieceAt === undefined;
   };
@@ -159,14 +159,14 @@ export class Board {
     );
   };
 
-  KingInCheck = (colour: "WHITE" | "BLACK"): Boolean => {
+  isKingInCheck = (colour: "WHITE" | "BLACK"): Boolean => {
     const kingPosition = this.board.find(
       (x) => x.piece.pieceType === "KING" && x.piece.colour === colour
     );
 
     return this.board
       .filter((x) => x.piece.colour !== colour)
-      .flatMap((x) => x.piece.getValidMoves(x.position, this))
+      .flatMap((x) => x.piece.getPotentialMoves(x.position, this))
       .some(
         (x) =>
           (x as Position).file === kingPosition?.position.file &&

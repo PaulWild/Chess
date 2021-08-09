@@ -11,7 +11,7 @@ describe("White Pawns", () => {
 
     it("can move forward twice on first rank", () => {
       const board = new Board([piece]);
-      const moves = piece.piece.getValidMoves(piece.position, board);
+      const moves = piece.piece.getPotentialMoves(piece.position, board);
 
       const expectedMoves = [
         { file: "d", move: "Move", rank: 6 },
@@ -32,7 +32,7 @@ describe("White Pawns", () => {
 
     it("can move forward once on after moving", () => {
       const board = new Board([piece]);
-      const moves = piece.piece.getValidMoves(piece.position, board);
+      const moves = piece.piece.getPotentialMoves(piece.position, board);
       const expectedMoves = [{ file: "d", move: "Move", rank: 4 }];
 
       expect(moves).toEqual(expect.arrayContaining(expectedMoves));
@@ -75,7 +75,7 @@ describe("White Pawns", () => {
         },
       ]);
 
-      const moves = piece.piece.getValidMoves(piece.position, board);
+      const moves = piece.piece.getPotentialMoves(piece.position, board);
       const expectedMoves = [
         { move: "Capture", rank: 4, file: "c" },
         { move: "Capture", rank: 4, file: "e" },

@@ -9,7 +9,7 @@ import {
 } from "./types";
 
 interface IValidMoves {
-  getValidMoves(position: Position, board: Board): ValidMoves;
+  getPotentialMoves(position: Position, board: Board): ValidMoves;
 
   canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove;
 }
@@ -35,7 +35,7 @@ export abstract class BasePiece implements IValidMoves, IPiece {
   }
 
   canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove {
-    const allMoves = this.getValidMoves(from, board);
+    const allMoves = this.getPotentialMoves(from, board);
 
     const potentialMove = allMoves.find(
       (position) => position.file === to.file && position.rank === to.rank
@@ -57,7 +57,7 @@ export abstract class BasePiece implements IValidMoves, IPiece {
       },
     });
 
-    const m: ValidMove | InvalidMove = !new Board(potentialBoard).KingInCheck(
+    const m: ValidMove | InvalidMove = !new Board(potentialBoard).isKingInCheck(
       this.colour
     )
       ? potentialMove
@@ -66,5 +66,5 @@ export abstract class BasePiece implements IValidMoves, IPiece {
     return m;
   }
 
-  abstract getValidMoves(from: Position, board: Board): ValidMoves;
+  abstract getPotentialMoves(from: Position, board: Board): ValidMoves;
 }
