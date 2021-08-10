@@ -27,15 +27,54 @@ export class Board {
     return this._board;
   }
 
-  enPassant: PiecePosition | undefined;
+  private _enPassant: Position | undefined;
+  public get enPassant(): Position | undefined {
+    return this._enPassant;
+  }
+  public set enPassant(value: Position | undefined) {
+    this._enPassant = value;
+  }
 
   constructor(
     initialPositions: PiecePosition[],
-    enPassant: PiecePosition | undefined = undefined
+    enPassant: Position | undefined = undefined
   ) {
     this._board = initialPositions;
     this.enPassant = enPassant;
   }
+
+  move = (from: Position, to: Position) => {
+    console.log(this.enPassant, "enPassant");
+    const pieceToMove = this.getPieceAt(from);
+    if (!pieceToMove) throw new Error("no piece to move");
+
+    this._board = this._board.filter(
+      (x) =>
+        !(x.position.rank === from.rank && x.position.file === from.file) &&
+        !(x.position.rank === to.rank && x.position.file === to.file)
+    );
+
+    pieceToMove.piece.setMoved();
+    this._board.push({
+      piece: pieceToMove.piece,
+      position: {
+        rank: to.rank,
+        file: to.file,
+      },
+    });
+  };
+
+  remove = (position: Position) => {
+    const pieceToRemove = this.getPieceAt(position);
+    if (!pieceToRemove) throw new Error("no piece to remove");
+
+    this._board = this._board.filter(
+      (x) =>
+        !(
+          x.position.rank === position.rank && x.position.file === position.file
+        )
+    );
+  };
 
   getMoveAtPosition = (
     position: Position,
@@ -140,10 +179,8 @@ export class Board {
     if (!this.enPassant) return false;
 
     return (
-      this.enPassant.position.file === file &&
-      this.enPassant.position.rank ===
-        rank + (piece.colour === "WHITE" ? -1 : 1) &&
-      this.enPassant.piece.colour !== piece.colour
+      this.enPassant.file === file &&
+      this.enPassant.rank === rank + (piece.colour === "WHITE" ? -1 : 1)
     );
   };
 

@@ -1,7 +1,6 @@
 import { Board } from "./board";
 import InitialBoard from "./initial-board";
-import { Rook } from "./rook";
-import { Position } from "./types";
+import { File, Position } from "./types";
 
 export class Game {
   private _board: Board;
@@ -29,80 +28,33 @@ export class Game {
       case "PawnPush":
       case "CaptureEnPassant":
       case "Capture": {
-        let board;
-
         if (move.move === "CaptureEnPassant") {
-          board = this.board.board.filter(
-            (x) =>
-              !(
-                x.position.rank === from.rank && x.position.file === from.file
-              ) &&
-              !(
-                x.position.rank === this.board.enPassant?.position.rank &&
-                x.position.file === this.board.enPassant?.position.file
-              )
-          );
-        } else {
-          board = this._board.board.filter(
-            (x) =>
-              !(
-                x.position.rank === from.rank && x.position.file === from.file
-              ) && !(x.position.rank === to.rank && x.position.file === to.file)
-          );
+          if (!this._board.enPassant) throw new Error("no enPassant");
+          this._board.remove(this._board.enPassant);
         }
-
-        piece.piece.setMoved();
-        board.push({
-          piece: piece.piece,
-          position: {
-            rank: to.rank,
-            file: to.file,
-          },
-        });
+        this._board.move(from, to);
 
         if (move.move === "PawnPush") {
-          this._board = new Board(board, {
-            piece: piece.piece,
-            position: {
-              rank: to.rank,
-              file: to.file,
-            },
-          });
+          this._board.enPassant = to;
         } else {
-          this._board = new Board(board);
+          this._board.enPassant = undefined;
         }
-
         break;
       }
       case "Castle": {
-        const b2 = this.board.board.filter(
-          (x) =>
-            !(x.position.rank === from.rank && x.position.file === from.file) &&
-            !(x.position.rank === to.rank && x.position.file === to.file) &&
-            !(
-              x.position.rank === piece.position.rank &&
-              x.position.file === (move.type === "SHORT" ? "h" : "a")
-            )
-        );
+        this._board.move(from, to);
 
-        piece.piece.setMoved();
-        b2.push({
-          piece: piece.piece,
-          position: {
-            rank: to.rank,
-            file: to.file,
-          },
-        });
+        const rookFrom = {
+          rank: piece.position.rank,
+          file: move.type === "SHORT" ? "h" : ("a" as File),
+        };
 
-        const rook = new Rook(piece.piece.colour);
-        b2.push({
-          piece: rook,
-          position: {
-            rank: piece.position.rank,
-            file: move.type === "SHORT" ? "f" : "d",
-          },
-        });
-        this._board = new Board(b2);
+        const rookTo = {
+          rank: piece.position.rank,
+          file: move.type === "SHORT" ? "f" : ("d" as File),
+        };
+
+        this._board.move(rookFrom, rookTo);
       }
     }
   }
