@@ -58,3 +58,5 @@ export type ValidMove =
   | CaptureEnPassant;
 
 export type ValidMoves = ValidMove[];
+
+export type Empty = null;

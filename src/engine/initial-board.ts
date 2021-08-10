@@ -1,10 +1,37 @@
+import { isEmptyBindingElement } from "typescript";
+import { BasePiece } from "./basePiece";
 import { Bishop } from "./bishop";
+import { FileArray, RankArray } from "./board";
 import { King } from "./king";
 import { Knight } from "./knight";
 import { Pawn } from "./pawn";
 import { Queen } from "./queen";
 import { Rook } from "./rook";
-import { PiecePosition } from "./types";
+import { PiecePosition, Rank, File, Empty } from "./types";
+
+class Square {
+  piece: BasePiece | Empty;
+  rank: Rank;
+  file: File;
+
+  constructor(rank: Rank, file: File, piece: BasePiece | Empty = null) {
+    this.rank = rank;
+    this.file = file;
+    this.piece = piece;
+  }
+}
+
+export const buildBoard = (): Record<Rank, Record<File, BasePiece | Empty>> => {
+  return  = {
+    1: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    2: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    3: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    4: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    5: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    6: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    7: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
+    8: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null}}
+}
 
 const InitialBoard: PiecePosition[] = [
   {
