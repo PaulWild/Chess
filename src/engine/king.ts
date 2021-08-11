@@ -34,14 +34,14 @@ export class King extends BasePiece {
         file: FileArray[file + 2],
       });
 
-    // if (this.canCastle(board, "LONG"))
-    //   validMoves.push({
-    //     move: "Castle",
-    //     type: "LONG",
-    //     colour: this.colour,
-    //     rank: rank,
-    //     file: FileArray[file - 2],
-    //   });
+    if (this.canCastle(board, "LONG"))
+      validMoves.push({
+        move: "Castle",
+        type: "LONG",
+        colour: this.colour,
+        rank: rank,
+        file: FileArray[file - 2],
+      });
 
     return validMoves;
   };
