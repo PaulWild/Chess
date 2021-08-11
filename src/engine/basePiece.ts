@@ -46,11 +46,14 @@ export abstract class BasePiece implements IValidMoves, IPiece {
 
     const clone = board.clone();
     clone.remove(from);
+    this.setMoved();
     clone.placeAt(to, this);
 
     const m: ValidMove | InvalidMove = !clone.isKingInCheck(this.colour)
       ? potentialMove
       : { move: "INVALID" };
+
+    this.moved = false;
 
     return m;
   }
