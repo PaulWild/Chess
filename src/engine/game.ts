@@ -1,5 +1,5 @@
 import { Board } from "./board";
-import InitialBoard from "./initial-board";
+import { buildBoard } from "./initial-board";
 import { File, Position } from "./types";
 
 export class Game {
@@ -10,15 +10,15 @@ export class Game {
   }
 
   constructor() {
-    this._board = new Board(InitialBoard);
+    this._board = new Board(buildBoard());
   }
 
   move(from: Position, to: Position) {
-    const piece = this._board.getPieceAt(from);
+    const square = this._board.getPieceAt(from);
+    console.log(square);
+    if (!square.piece) throw new Error("No Piece to move");
 
-    if (!piece) throw new Error("No Piece to move");
-
-    const move = piece.piece.canMove(from, to, this.board);
+    const move = square.piece.canMove(from, to, this.board);
     console.log(move);
 
     switch (move.move) {
@@ -45,12 +45,12 @@ export class Game {
         this._board.move(from, to);
 
         const rookFrom = {
-          rank: piece.position.rank,
+          rank: square.rank,
           file: move.type === "SHORT" ? "h" : ("a" as File),
         };
 
         const rookTo = {
-          rank: piece.position.rank,
+          rank: square.rank,
           file: move.type === "SHORT" ? "f" : ("d" as File),
         };
 

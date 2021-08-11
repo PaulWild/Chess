@@ -1,4 +1,5 @@
 import { BasePiece } from "./basePiece";
+import { Square } from "./square";
 import {
   File,
   PiecePosition,
@@ -21,7 +22,7 @@ export const isLightSquare = (rank: Rank, file: File) => {
 };
 
 export class Board {
-  private _board: PiecePosition[];
+  private _board: Square[];
 
   public get board() {
     return this._board;
@@ -36,44 +37,39 @@ export class Board {
   }
 
   constructor(
-    initialPositions: PiecePosition[],
+    initialPositions: Square[],
     enPassant: Position | undefined = undefined
   ) {
     this._board = initialPositions;
     this.enPassant = enPassant;
   }
 
+  clone = () => {
+    const board = this._board.map((x) => x.clone());
+    return new Board(board, this._enPassant);
+  };
+
   move = (from: Position, to: Position) => {
     console.log(this.enPassant, "enPassant");
-    const pieceToMove = this.getPieceAt(from);
-    if (!pieceToMove) throw new Error("no piece to move");
+    const squareFrom = this.getPieceAt(from);
+    const squareTo = this.getPieceAt(to);
 
-    this._board = this._board.filter(
-      (x) =>
-        !(x.position.rank === from.rank && x.position.file === from.file) &&
-        !(x.position.rank === to.rank && x.position.file === to.file)
-    );
+    if (!squareFrom.piece) throw new Error("no piece to move");
 
-    pieceToMove.piece.setMoved();
-    this._board.push({
-      piece: pieceToMove.piece,
-      position: {
-        rank: to.rank,
-        file: to.file,
-      },
-    });
+    squareFrom.piece.setMoved();
+    squareTo.place(squareFrom.piece);
+    squareFrom.remove();
   };
 
   remove = (position: Position) => {
-    const pieceToRemove = this.getPieceAt(position);
-    if (!pieceToRemove) throw new Error("no piece to remove");
+    const square = this.getPieceAt(position);
+    if (!square.piece) throw new Error("no piece to remove");
+    square.remove();
+  };
 
-    this._board = this._board.filter(
-      (x) =>
-        !(
-          x.position.rank === position.rank && x.position.file === position.file
-        )
-    );
+  placeAt = (position: Position, piece: BasePiece) => {
+    const square = this.getPieceAt(position);
+    square.place(piece);
   };
 
   getMoveAtPosition = (
@@ -170,8 +166,9 @@ export class Board {
   };
 
   canTakeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
-    const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
-    return pieceAt !== undefined && pieceAt.piece.colour !== colour;
+    const square = this.getPieceAt({ rank: rank as Rank, file });
+
+    return square.piece !== null && square.piece.colour !== colour;
   };
 
   canTakeEnPassant = (rank: Rank, file: File, piece: BasePiece): boolean => {
@@ -186,28 +183,33 @@ export class Board {
 
   canMoveTo = (rank: Rank, file: File): boolean => {
     const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
-    return pieceAt === undefined;
+    return pieceAt.piece === null;
   };
 
-  getPieceAt = (position: Position) => {
-    return this._board.find(
-      (x) =>
-        x.position.rank === position.rank && x.position.file === position.file
+  getPieceAt = (position: Position): Square => {
+    const square = this._board.find(
+      (x) => x.rank === position.rank && x.file === position.file
     );
+
+    if (square === undefined) throw new Error("Out of bounds");
+
+    return square;
   };
 
   isKingInCheck = (colour: "WHITE" | "BLACK"): Boolean => {
     const kingPosition = this.board.find(
-      (x) => x.piece.pieceType === "KING" && x.piece.colour === colour
+      (x) => x.piece?.pieceType === "KING" && x.piece.colour === colour
     );
 
     return this.board
-      .filter((x) => x.piece.colour !== colour)
-      .flatMap((x) => x.piece.getPotentialMoves(x.position, this))
+      .filter((x) => x.piece !== null && x.piece.colour !== colour)
+      .flatMap((x) =>
+        x.piece?.getPotentialMoves({ file: x.file, rank: x.rank }, this)
+      )
       .some(
         (x) =>
-          (x as Position).file === kingPosition?.position.file &&
-          (x as Position).rank === kingPosition?.position.rank
+          (x as Position).file === kingPosition?.file &&
+          (x as Position).rank === kingPosition?.rank
       );
   };
 }

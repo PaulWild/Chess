@@ -57,7 +57,7 @@ export class King extends BasePiece {
     if (this.moved) return false;
 
     const rook = board.getPieceAt({ rank: kingRank, file: rookFile });
-    if (!(rook && !rook.piece.moved)) return false;
+    if (!(rook.piece && !rook.piece.moved)) return false;
 
     return moveDeltas.every((fileDelta) => {
       const newFile = 4 + fileDelta;
@@ -68,23 +68,13 @@ export class King extends BasePiece {
       });
 
       if (!pieceAt || fileDelta === 0) {
-        const potentialBoard = board.board.filter(
-          (x) => !(x.position.rank === kingRank && x.position.file === "e")
-        );
+        const clone = board.clone();
+        const king = new King(this.colour);
+        king.setMoved();
+        clone.remove({ rank: kingRank, file: "e" });
+        clone.placeAt({ rank: kingRank, file: FileArray[newFile] }, king);
 
-        var p = new King(this.colour);
-        p.setMoved();
-        potentialBoard.push({
-          piece: p,
-          position: {
-            rank: kingRank,
-            file: FileArray[newFile],
-          },
-        });
-
-        const b = new Board(potentialBoard);
-
-        return !b.isKingInCheck(this.colour);
+        return !clone.isKingInCheck(this.colour);
       }
       return false;
     });

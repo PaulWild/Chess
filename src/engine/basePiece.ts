@@ -37,29 +37,18 @@ export abstract class BasePiece implements IValidMoves, IPiece {
   canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove {
     const allMoves = this.getPotentialMoves(from, board);
 
+    console.log(allMoves);
     const potentialMove = allMoves.find(
       (position) => position.file === to.file && position.rank === to.rank
     );
 
     if (!potentialMove) return { move: "INVALID" };
 
-    const potentialBoard = board.board.filter(
-      (x) =>
-        !(x.position.rank === from.rank && x.position.file === from.file) &&
-        !(x.position.rank === to.rank && x.position.file === to.file)
-    );
+    const clone = board.clone();
+    clone.remove(from);
+    clone.placeAt(to, this);
 
-    potentialBoard.push({
-      piece: this,
-      position: {
-        rank: to.rank,
-        file: to.file,
-      },
-    });
-
-    const m: ValidMove | InvalidMove = !new Board(potentialBoard).isKingInCheck(
-      this.colour
-    )
+    const m: ValidMove | InvalidMove = !clone.isKingInCheck(this.colour)
       ? potentialMove
       : { move: "INVALID" };
 

@@ -1,4 +1,3 @@
-import { isEmptyBindingElement } from "typescript";
 import { BasePiece } from "./basePiece";
 import { Bishop } from "./bishop";
 import { FileArray, RankArray } from "./board";
@@ -7,31 +6,57 @@ import { Knight } from "./knight";
 import { Pawn } from "./pawn";
 import { Queen } from "./queen";
 import { Rook } from "./rook";
-import { PiecePosition, Rank, File, Empty } from "./types";
+import { Square } from "./square";
+import { PiecePosition, Rank, File } from "./types";
 
-class Square {
-  piece: BasePiece | Empty;
-  rank: Rank;
-  file: File;
+export const buildBoard = (): Square[] => {
+  const board = RankArray.flatMap((rank) =>
+    FileArray.map((file) => new Square(rank, file))
+  );
 
-  constructor(rank: Rank, file: File, piece: BasePiece | Empty = null) {
-    this.rank = rank;
-    this.file = file;
-    this.piece = piece;
-  }
-}
+  const placeAt = (rank: Rank, file: File, piece: BasePiece) => {
+    const sqaure = board.find((x) => x.file === file && x.rank === rank);
+    sqaure?.place(piece);
+  };
 
-export const buildBoard = (): Record<Rank, Record<File, BasePiece | Empty>> => {
-  return  = {
-    1: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    2: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    3: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    4: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    5: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    6: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    7: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null},
-    8: {"a": null, "b": null, "c": null, "d": null, "e": null, "f": null, "g": null, "h": null}}
-}
+  placeAt(1, "a", new Rook("WHITE"));
+  placeAt(1, "b", new Knight("WHITE"));
+  placeAt(1, "c", new Bishop("WHITE"));
+  placeAt(1, "d", new Queen("WHITE"));
+  placeAt(1, "e", new King("WHITE"));
+  placeAt(1, "f", new Bishop("WHITE"));
+  placeAt(1, "g", new Knight("WHITE"));
+  placeAt(1, "h", new Rook("WHITE"));
+
+  placeAt(2, "a", new Pawn("WHITE"));
+  placeAt(2, "b", new Pawn("WHITE"));
+  placeAt(2, "c", new Pawn("WHITE"));
+  placeAt(2, "d", new Pawn("WHITE"));
+  placeAt(2, "e", new Pawn("WHITE"));
+  placeAt(2, "f", new Pawn("WHITE"));
+  placeAt(2, "g", new Pawn("WHITE"));
+  placeAt(2, "h", new Pawn("WHITE"));
+
+  placeAt(7, "a", new Pawn("BLACK"));
+  placeAt(7, "b", new Pawn("BLACK"));
+  placeAt(7, "c", new Pawn("BLACK"));
+  placeAt(7, "d", new Pawn("BLACK"));
+  placeAt(7, "e", new Pawn("BLACK"));
+  placeAt(7, "f", new Pawn("BLACK"));
+  placeAt(7, "g", new Pawn("BLACK"));
+  placeAt(7, "h", new Pawn("BLACK"));
+
+  placeAt(8, "a", new Rook("BLACK"));
+  placeAt(8, "b", new Knight("BLACK"));
+  placeAt(8, "c", new Bishop("BLACK"));
+  placeAt(8, "d", new Queen("BLACK"));
+  placeAt(8, "e", new King("BLACK"));
+  placeAt(8, "f", new Bishop("BLACK"));
+  placeAt(8, "g", new Knight("BLACK"));
+  placeAt(8, "h", new Rook("BLACK"));
+
+  return board;
+};
 
 const InitialBoard: PiecePosition[] = [
   {

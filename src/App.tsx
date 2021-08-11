@@ -19,11 +19,11 @@ import {
 } from "./engine/board";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
-  const piecePoistion = currentBoard.getPieceAt({ rank, file });
+  const square = currentBoard.getPieceAt({ rank, file });
 
-  if (piecePoistion) {
-    const set = piecePoistion.piece.colour === "WHITE" ? White : Black;
-    switch (piecePoistion.piece.pieceType) {
+  if (square.piece) {
+    const set = square.piece.colour === "WHITE" ? White : Black;
+    switch (square.piece.pieceType) {
       case "BISHOP":
         return set.Bishop;
       case "KING":
