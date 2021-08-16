@@ -94,7 +94,7 @@ const GridPosition = ({ rank, file, bound }: gridProps) => {
     <div
       className={`${styles.chessSquare} ${isLight ? styles.light : ""} ${
         inBound ? styles.highlighted : ""
-      }`}
+      } ${styles[`rank_${rank}`]} ${styles[`file_${file}`]}`}
       //@ts-ignore
       rank={rank}
       file={file}

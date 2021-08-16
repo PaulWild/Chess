@@ -27,3 +27,101 @@
 .highlighted {
   box-shadow: inset 0rem 0rem 0.2rem 0.2rem rgb(228, 62, 186);
 }
+
+@media only screen and (max-width: 576px) {
+  .rank_1::after {
+    position: absolute;
+    font-size: 0.5rem;
+    padding-left: 0.07rem;
+    margin-top: -0.98rem;
+    font-weight: bold;
+  }
+
+  .file_a::before {
+    font-size: 0.5rem;
+    padding: 0.07rem;
+    position: absolute;
+    font-weight: bold;
+  }
+}
+
+@media only screen and (min-width: 576px) {
+  .rank_1::after {
+    position: absolute;
+    font-size: 1.5rem;
+    padding-left: 0.5rem;
+    margin-top: -2.5rem;
+    font-weight: bold;
+  }
+
+  .file_a::before {
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    position: absolute;
+    font-weight: bold;
+  }
+}
+
+.rank_1.file_a::after {
+  content: "a";
+}
+
+.rank_1.file_b::after {
+  content: "b";
+}
+
+.rank_1.file_c::after {
+  content: "c";
+}
+
+.rank_1.file_d::after {
+  content: "d";
+}
+
+.rank_1.file_e::after {
+  content: "e";
+}
+
+.rank_1.file_f::after {
+  content: "f";
+}
+
+.rank_1.file_g::after {
+  content: "g";
+}
+
+.rank_1.file_h::after {
+  content: "h";
+}
+
+.rank_1.file_a::before {
+  content: "1";
+}
+
+.rank_2.file_a::before {
+  content: "2";
+}
+
+.rank_3.file_a::before {
+  content: "3";
+}
+
+.rank_4.file_a::before {
+  content: "4";
+}
+
+.rank_5.file_a::before {
+  content: "5";
+}
+
+.rank_6.file_a::before {
+  content: "6";
+}
+
+.rank_7.file_a::before {
+  content: "7";
+}
+
+.rank_8.file_a::before {
+  content: "8";
+}

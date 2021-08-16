@@ -1,13 +1,6 @@
 import { BasePiece } from "./basePiece";
 import { Square } from "./square";
-import {
-  File,
-  PiecePosition,
-  Position,
-  Rank,
-  ValidMove,
-  ValidMoves,
-} from "./types";
+import { File, Position, Rank, ValidMove, ValidMoves } from "./types";
 
 export const RankArray: Rank[] = [8, 7, 6, 5, 4, 3, 2, 1];
 export const FileArray: File[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
