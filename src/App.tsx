@@ -111,6 +111,8 @@ const GridPosition = ({ rank, file, bound }: gridProps) => {
           <Piece />
         </Draggable>
       )}
+      {rank === 1 && <div className={styles.rank}>{file}</div>}
+      {file === "a" && <div className={styles.file}>{rank}</div>}
     </div>
   );
 };
