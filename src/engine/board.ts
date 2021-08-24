@@ -29,17 +29,35 @@ export class Board {
     this._enPassant = value;
   }
 
+  private _movedPieces: BasePiece[];
+
   constructor(
     initialPositions: Square[],
-    enPassant: Position | undefined = undefined
+    enPassant: Position | undefined = undefined,
+    movedPieces: BasePiece[] | [] = []
   ) {
     this._board = initialPositions;
     this.enPassant = enPassant;
+    this._movedPieces = movedPieces;
   }
+
+  addToMoved = (piece: BasePiece) => {
+    if (!this._movedPieces.includes(piece)) {
+      this._movedPieces.push(piece);
+    }
+  };
+
+  pieceMoved = (piece: BasePiece) => {
+    return this._movedPieces.includes(piece);
+  };
 
   clone = () => {
     const board = this._board.map((x) => x.clone());
-    return new Board(board, this._enPassant);
+    return new Board(
+      board,
+      this._enPassant,
+      this._movedPieces.map((_) => _)
+    );
   };
 
   move = (from: Position, to: Position) => {
@@ -50,6 +68,7 @@ export class Board {
     if (!squareFrom.piece) throw new Error("no piece to move");
 
     squareFrom.piece.setMoved();
+    this.addToMoved(squareFrom.piece);
     squareTo.place(squareFrom.piece);
     squareFrom.remove();
   };
