@@ -114,7 +114,7 @@ export const Draggable = ({
 
   return (
     <div
-      className={Styles.container}
+      className={initial.pressed ? Styles.active : ""}
       ref={ref}
       onMouseDown={onMouseDownCallback}
       onTouchStart={onMouseDownCallback}
