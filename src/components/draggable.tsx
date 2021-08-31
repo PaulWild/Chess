@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import Styles from "./draggable.module.css";
 
 type Props = {
   children: React.ReactNode;
@@ -113,6 +114,7 @@ export const Draggable = ({
 
   return (
     <div
+      className={Styles.container}
       ref={ref}
       onMouseDown={onMouseDownCallback}
       onTouchStart={onMouseDownCallback}
