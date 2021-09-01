@@ -8,6 +8,7 @@ import {
   ValidMove,
   ValidMoves,
   File,
+  PieceColour,
 } from "./types";
 
 interface IValidMoves {
@@ -38,7 +39,10 @@ abstract class BaseValidator implements IValidMoves {
     const clone = this.board.clone();
     clone.move(from, to);
 
-    const m: ValidMove | InvalidMove = !clone.isKingInCheck(this.piece.colour)
+    const m: ValidMove | InvalidMove = !getMoveValidator(
+      this.piece,
+      clone
+    ).isKingInCheck(this.piece.colour)
       ? potentialMove
       : { move: "INVALID" };
 
@@ -150,8 +154,22 @@ abstract class BaseValidator implements IValidMoves {
     return pieceAt.piece === null;
   };
 
-  isKingInCheck = (colour: "WHITE" | "BLACK"): Boolean => {
-    return this.board.isKingInCheck(colour);
+  isKingInCheck = (colour: PieceColour): Boolean => {
+    const kingPosition = this.board.getKing(colour);
+
+    return this.board
+      .getPieces(colour === "WHITE" ? "BLACK" : "WHITE")
+      .flatMap((x) =>
+        getMoveValidator(x.piece as IPiece, this.board).getPotentialMoves({
+          file: x.file,
+          rank: x.rank,
+        })
+      )
+      .some(
+        (x) =>
+          (x as Position).file === kingPosition?.file &&
+          (x as Position).rank === kingPosition?.rank
+      );
   };
 
   abstract getPotentialMoves(from: Position): ValidMoves;
@@ -309,14 +327,19 @@ export class KingValidator extends BaseValidator {
           { rank: kingRank, file: FileArray[newFile] }
         );
 
-        return !clone.isKingInCheck(this.piece.colour);
+        return !getMoveValidator(this.piece, clone).isKingInCheck(
+          this.piece.colour
+        );
       }
       return false;
     });
   }
 }
 
-export const getMoveValidator = (piece: IPiece, board: Board): IValidMoves => {
+export const getMoveValidator = (
+  piece: IPiece,
+  board: Board
+): BaseValidator => {
   switch (piece.pieceType) {
     case "BISHOP":
       return new BishopValidator(piece, board);

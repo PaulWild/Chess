@@ -1,7 +1,6 @@
-import { getMoveValidator } from "./basePiece";
 import { IPiece } from "./pieces";
 import { Square } from "./square";
-import { File, Position, Rank, ValidMove, ValidMoves } from "./types";
+import { File, PieceColour, Position, Rank } from "./types";
 
 export const RankArray: Rank[] = [8, 7, 6, 5, 4, 3, 2, 1];
 export const FileArray: File[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -62,15 +61,15 @@ export class Board {
   };
 
   move = (from: Position, to: Position) => {
-    console.log(this.enPassant, "enPassant");
     const squareFrom = this.getPieceAt(from);
+    const squareFromPiece = squareFrom.piece;
     const squareTo = this.getPieceAt(to);
 
-    if (!squareFrom.piece) throw new Error("no piece to move");
+    if (!squareFromPiece) throw new Error("no piece to move");
 
-    this.addToMoved(squareFrom.piece);
-    squareTo.place(squareFrom.piece);
     squareFrom.remove();
+    this.addToMoved(squareFromPiece);
+    squareTo.place(squareFromPiece);
   };
 
   remove = (position: Position) => {
@@ -84,120 +83,6 @@ export class Board {
     square.place(piece);
   };
 
-  getMoveAtPosition = (
-    position: Position,
-    piece: IPiece,
-    rankDelta: number,
-    fileDelta: number
-  ): ValidMove | undefined => {
-    const newFile = FileArray.indexOf(position.file) + fileDelta;
-    const newRank = position.rank + rankDelta;
-
-    if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-      return;
-    }
-    return this.checkPosition(piece, newRank as Rank, FileArray[newFile]);
-  };
-
-  getMovesOnLine = (
-    position: Position,
-    piece: IPiece,
-    rankDelta: number,
-    fileDelta: number
-  ): ValidMoves => {
-    const validMoves = [];
-    for (let i = 1; i < 8; i++) {
-      const newFile = FileArray.indexOf(position.file) + fileDelta * i;
-      const newRank = position.rank + rankDelta * i;
-
-      if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-        break;
-      }
-
-      const move = this.checkPosition(
-        piece,
-        newRank as Rank,
-        FileArray[newFile]
-      );
-
-      if (move === undefined) {
-        break;
-      }
-
-      validMoves.push(move);
-
-      if (move.move === "Capture") {
-        break;
-      }
-    }
-    return validMoves;
-  };
-
-  checkPosition = (
-    piece: IPiece,
-    rank: Rank,
-    file: File
-  ): ValidMove | undefined => {
-    if (this.canTakeAt(rank, file, piece.colour)) {
-      return {
-        move: "Capture",
-        rank: rank,
-        file: file,
-      };
-    }
-    if (this.canTakeEnPassant(rank, file, piece)) {
-      return {
-        move: "CaptureEnPassant",
-        rank: rank,
-        file: file,
-      };
-    }
-    if (this.canMoveTo(rank, file)) {
-      if (
-        piece.pieceType === "PAWN" &&
-        !this.pieceMoved(piece) &&
-        (rank === 4 || rank === 5)
-      ) {
-        return {
-          move: "PawnPush",
-          rank: rank,
-          file: file,
-        };
-      }
-      return {
-        move: "Move",
-        rank: rank,
-        file: file,
-      };
-    }
-    return undefined;
-  };
-
-  isStandardMove = (item: ValidMove | undefined): item is ValidMove => {
-    return !!item;
-  };
-
-  canTakeAt = (rank: Rank, file: File, colour: "WHITE" | "BLACK"): boolean => {
-    const square = this.getPieceAt({ rank: rank as Rank, file });
-
-    return square.piece !== null && square.piece.colour !== colour;
-  };
-
-  canTakeEnPassant = (rank: Rank, file: File, piece: IPiece): boolean => {
-    if (piece.pieceType !== "PAWN") return false;
-    if (!this.enPassant) return false;
-
-    return (
-      this.enPassant.file === file &&
-      this.enPassant.rank === rank + (piece.colour === "WHITE" ? -1 : 1)
-    );
-  };
-
-  canMoveTo = (rank: Rank, file: File): boolean => {
-    const pieceAt = this.getPieceAt({ rank: rank as Rank, file });
-    return pieceAt.piece === null;
-  };
-
   getPieceAt = (position: Position): Square => {
     const square = this._board.find(
       (x) => x.rank === position.rank && x.file === position.file
@@ -208,23 +93,20 @@ export class Board {
     return square;
   };
 
-  isKingInCheck = (colour: "WHITE" | "BLACK"): Boolean => {
-    const kingPosition = this.board.find(
+  getPieces = (colour: PieceColour): Square[] => {
+    return this.board.filter(
+      (x) => x.piece !== null && x.piece.colour === colour
+    );
+  };
+
+  getKing = (colour: PieceColour): Square => {
+    const king = this.board.find(
       (x) => x.piece?.pieceType === "KING" && x.piece.colour === colour
     );
 
-    return this.board
-      .filter((x) => x.piece !== null && x.piece.colour !== colour)
-      .flatMap((x) =>
-        getMoveValidator(x.piece as IPiece, this).getPotentialMoves({
-          file: x.file,
-          rank: x.rank,
-        })
-      )
-      .some(
-        (x) =>
-          (x as Position).file === kingPosition?.file &&
-          (x as Position).rank === kingPosition?.rank
-      );
+    if (!king) {
+      throw new Error("Where's the king?");
+    }
+    return king;
   };
 }
