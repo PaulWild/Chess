@@ -1,4 +1,4 @@
-import { BasePiece } from "./basePiece";
+import { BasePiece, getMoveValidator } from "./basePiece";
 import { Square } from "./square";
 import { File, Position, Rank, ValidMove, ValidMoves } from "./types";
 
@@ -154,7 +154,7 @@ export class Board {
     if (this.canMoveTo(rank, file)) {
       if (
         piece.pieceType === "PAWN" &&
-        !this._movedPieces.includes(piece) &&
+        !this.pieceMoved(piece) &&
         (rank === 4 || rank === 5)
       ) {
         return {
@@ -215,7 +215,10 @@ export class Board {
     return this.board
       .filter((x) => x.piece !== null && x.piece.colour !== colour)
       .flatMap((x) =>
-        x.piece?.getPotentialMoves({ file: x.file, rank: x.rank }, this)
+        getMoveValidator(x.piece as BasePiece, this).getPotentialMoves({
+          file: x.file,
+          rank: x.rank,
+        })
       )
       .some(
         (x) =>

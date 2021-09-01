@@ -1,3 +1,4 @@
+import { getMoveValidator } from "./basePiece";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
 import { File, Position } from "./types";
@@ -18,7 +19,7 @@ export class Game {
     console.log(square);
     if (!square.piece) throw new Error("No Piece to move");
 
-    const move = square.piece.canMove(from, to, this.board);
+    const move = getMoveValidator(square.piece, this._board).canMove(from, to);
     console.log(move);
 
     switch (move.move) {
