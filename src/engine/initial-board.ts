@@ -1,11 +1,6 @@
-import { BasePiece } from "./basePiece";
-import { Bishop } from "./bishop";
 import { FileArray, RankArray } from "./board";
-import { King } from "./king";
-import { Knight } from "./knight";
-import { Pawn } from "./pawn";
-import { Queen } from "./queen";
-import { Rook } from "./rook";
+import { Bishop, IPiece, King, Knight, Pawn, Queen, Rook } from "./pieces";
+
 import { Square } from "./square";
 import { PiecePosition, Rank, File } from "./types";
 
@@ -14,7 +9,7 @@ export const buildBoard = (): Square[] => {
     FileArray.map((file) => new Square(rank, file))
   );
 
-  const placeAt = (rank: Rank, file: File, piece: BasePiece) => {
+  const placeAt = (rank: Rank, file: File, piece: IPiece) => {
     const sqaure = board.find((x) => x.file === file && x.rank === rank);
     sqaure?.place(piece);
   };

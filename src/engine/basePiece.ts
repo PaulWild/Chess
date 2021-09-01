@@ -1,9 +1,8 @@
 import { Board, FileArray } from "./board";
+import { IPiece } from "./pieces";
 
 import {
   InvalidMove,
-  PieceColour,
-  PieceType,
   Position,
   Rank,
   ValidMove,
@@ -17,21 +16,7 @@ interface IValidMoves {
   canMove(from: Position, to: Position): ValidMove | InvalidMove;
 }
 
-interface IPiece {
-  pieceType: PieceType;
-  colour: PieceColour;
-}
-
-export abstract class BasePiece implements IPiece {
-  abstract pieceType: PieceType;
-  colour: PieceColour;
-
-  constructor(colour: PieceColour) {
-    this.colour = colour;
-  }
-}
-
-export abstract class BaseValidator implements IValidMoves {
+abstract class BaseValidator implements IValidMoves {
   piece: IPiece;
   board: Board;
 

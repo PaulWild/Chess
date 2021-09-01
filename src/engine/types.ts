@@ -1,8 +1,8 @@
-import { BasePiece } from "./basePiece";
+import { IPiece } from "./pieces";
 
 export type PiecePosition = {
   position: Position;
-  piece: BasePiece;
+  piece: IPiece;
 };
 
 export type PieceType =

@@ -1,4 +1,5 @@
-import { BasePiece, getMoveValidator } from "./basePiece";
+import { getMoveValidator } from "./basePiece";
+import { IPiece } from "./pieces";
 import { Square } from "./square";
 import { File, Position, Rank, ValidMove, ValidMoves } from "./types";
 
@@ -29,25 +30,25 @@ export class Board {
     this._enPassant = value;
   }
 
-  private _movedPieces: BasePiece[];
+  private _movedPieces: IPiece[];
 
   constructor(
     initialPositions: Square[],
     enPassant: Position | undefined = undefined,
-    movedPieces: BasePiece[] | [] = []
+    movedPieces: IPiece[] | [] = []
   ) {
     this._board = initialPositions;
     this.enPassant = enPassant;
     this._movedPieces = movedPieces;
   }
 
-  addToMoved = (piece: BasePiece) => {
+  addToMoved = (piece: IPiece) => {
     if (!this._movedPieces.includes(piece)) {
       this._movedPieces.push(piece);
     }
   };
 
-  pieceMoved = (piece: BasePiece) => {
+  pieceMoved = (piece: IPiece) => {
     return this._movedPieces.includes(piece);
   };
 
@@ -78,14 +79,14 @@ export class Board {
     square.remove();
   };
 
-  placeAt = (position: Position, piece: BasePiece) => {
+  placeAt = (position: Position, piece: IPiece) => {
     const square = this.getPieceAt(position);
     square.place(piece);
   };
 
   getMoveAtPosition = (
     position: Position,
-    piece: BasePiece,
+    piece: IPiece,
     rankDelta: number,
     fileDelta: number
   ): ValidMove | undefined => {
@@ -100,7 +101,7 @@ export class Board {
 
   getMovesOnLine = (
     position: Position,
-    piece: BasePiece,
+    piece: IPiece,
     rankDelta: number,
     fileDelta: number
   ): ValidMoves => {
@@ -133,7 +134,7 @@ export class Board {
   };
 
   checkPosition = (
-    piece: BasePiece,
+    piece: IPiece,
     rank: Rank,
     file: File
   ): ValidMove | undefined => {
@@ -182,7 +183,7 @@ export class Board {
     return square.piece !== null && square.piece.colour !== colour;
   };
 
-  canTakeEnPassant = (rank: Rank, file: File, piece: BasePiece): boolean => {
+  canTakeEnPassant = (rank: Rank, file: File, piece: IPiece): boolean => {
     if (piece.pieceType !== "PAWN") return false;
     if (!this.enPassant) return false;
 
@@ -215,7 +216,7 @@ export class Board {
     return this.board
       .filter((x) => x.piece !== null && x.piece.colour !== colour)
       .flatMap((x) =>
-        getMoveValidator(x.piece as BasePiece, this).getPotentialMoves({
+        getMoveValidator(x.piece as IPiece, this).getPotentialMoves({
           file: x.file,
           rank: x.rank,
         })
