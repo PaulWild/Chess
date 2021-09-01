@@ -1,7 +1,7 @@
 import { getMoveValidator } from "./basePiece";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
-import { File, Position } from "./types";
+import { File, GameState, Position } from "./types";
 
 export class Game {
   private _board: Board;
@@ -12,10 +12,30 @@ export class Game {
 
   constructor() {
     this._board = new Board(buildBoard());
+    this._state = "WhiteMove";
+  }
+
+  private _state: GameState;
+
+  public get state(): GameState {
+    return this._state;
   }
 
   move(from: Position, to: Position) {
+    if (this._state !== "BlackMove" && this._state !== "WhiteMove") {
+      return;
+    }
+
     const square = this._board.getPieceAt(from);
+
+    if (this._state === "BlackMove" && square.piece?.colour === "WHITE") {
+      return;
+    }
+
+    if (this._state === "WhiteMove" && square.piece?.colour === "BLACK") {
+      return;
+    }
+
     console.log(square);
     if (!square.piece) throw new Error("No Piece to move");
 
@@ -24,7 +44,7 @@ export class Game {
 
     switch (move.move) {
       case "INVALID":
-        break;
+        return;
       case "Move":
       case "PawnPush":
       case "CaptureEnPassant":
@@ -58,5 +78,7 @@ export class Game {
         this._board.move(rookFrom, rookTo);
       }
     }
+
+    this._state = this._state === "WhiteMove" ? "BlackMove" : "WhiteMove";
   }
 }

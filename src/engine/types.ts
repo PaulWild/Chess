@@ -60,3 +60,12 @@ export type ValidMove =
 export type ValidMoves = ValidMove[];
 
 export type Empty = null;
+
+export type GameState =
+  | "WhiteMove"
+  | "BlackMove"
+  | "WhiteWin"
+  | "BlackWin"
+  | "StaleMate"
+  | "DrawRepition3"
+  | "DrawRepition5";
