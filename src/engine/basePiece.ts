@@ -17,21 +17,14 @@ interface IValidMoves {
 interface IPiece {
   pieceType: PieceType;
   colour: PieceColour;
-  moved: boolean;
 }
 
 export abstract class BasePiece implements IValidMoves, IPiece {
   abstract pieceType: PieceType;
   colour: PieceColour;
-  moved: boolean;
-
-  setMoved() {
-    this.moved = true;
-  }
 
   constructor(colour: PieceColour) {
     this.colour = colour;
-    this.moved = false;
   }
 
   canMove(from: Position, to: Position, board: Board): ValidMove | InvalidMove {
@@ -45,15 +38,11 @@ export abstract class BasePiece implements IValidMoves, IPiece {
     if (!potentialMove) return { move: "INVALID" };
 
     const clone = board.clone();
-    clone.remove(from);
-    this.setMoved();
-    clone.placeAt(to, this);
+    clone.move(from, to);
 
     const m: ValidMove | InvalidMove = !clone.isKingInCheck(this.colour)
       ? potentialMove
       : { move: "INVALID" };
-
-    this.moved = false;
 
     return m;
   }

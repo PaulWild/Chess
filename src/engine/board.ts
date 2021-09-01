@@ -67,7 +67,6 @@ export class Board {
 
     if (!squareFrom.piece) throw new Error("no piece to move");
 
-    squareFrom.piece.setMoved();
     this.addToMoved(squareFrom.piece);
     squareTo.place(squareFrom.piece);
     squareFrom.remove();
@@ -155,7 +154,7 @@ export class Board {
     if (this.canMoveTo(rank, file)) {
       if (
         piece.pieceType === "PAWN" &&
-        !piece.moved &&
+        !this._movedPieces.includes(piece) &&
         (rank === 4 || rank === 5)
       ) {
         return {

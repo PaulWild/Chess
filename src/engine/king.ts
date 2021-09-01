@@ -54,11 +54,10 @@ export class King extends BasePiece {
     const rookFile = type === "SHORT" ? "h" : "a";
     const kingRank = this.colour === "WHITE" ? 1 : 8;
 
-    console.log(this.moved);
-    if (this.moved) return false;
+    if (board.pieceMoved(this)) return false;
 
     const rook = board.getPieceAt({ rank: kingRank, file: rookFile });
-    if (!(rook.piece && !rook.piece.moved)) return false;
+    if (!(rook.piece && !board.pieceMoved(rook.piece))) return false;
 
     return moveDeltas.every((fileDelta) => {
       const newFile = 4 + fileDelta;
@@ -70,11 +69,10 @@ export class King extends BasePiece {
 
       if (pieceAt.piece === null || fileDelta === 0) {
         const clone = board.clone();
-        const king = new King(this.colour);
-        king.setMoved();
-        console.log(king);
-        clone.remove({ rank: kingRank, file: "e" });
-        clone.placeAt({ rank: kingRank, file: FileArray[newFile] }, king);
+        clone.move(
+          { rank: kingRank, file: "e" },
+          { rank: kingRank, file: FileArray[newFile] }
+        );
 
         return !clone.isKingInCheck(this.colour);
       }

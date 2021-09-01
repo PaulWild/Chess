@@ -8,7 +8,7 @@ export class Pawn extends BasePiece {
   getPotentialMoves = (position: Position, board: Board) => {
     const increment = this.colour === "WHITE" ? 1 : -1;
 
-    const moveDeltas = this.moved
+    const moveDeltas = board.pieceMoved(this)
       ? [1 * increment]
       : [1 * increment, 2 * increment];
 
