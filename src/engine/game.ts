@@ -20,7 +20,6 @@ export class Game {
 
   constructor() {
     this._board = new Board(buildBoard());
-    console.log(this._board.getFenPlacement());
     this._state = "WhiteMove";
     this._fullMoves = 1;
     this._halfMoves = 0;
@@ -104,6 +103,53 @@ export class Game {
           this._enPessantSquare = undefined;
         }
 
+        if (piece.pieceType === "KING") {
+          if (piece.colour === "WHITE") {
+            this._castlingAbility &= ~CastlingRights.K;
+            this._castlingAbility &= ~CastlingRights.Q;
+          }
+          if (piece.colour === "BLACK") {
+            this._castlingAbility &= ~CastlingRights.k;
+            this._castlingAbility &= ~CastlingRights.q;
+          }
+        }
+
+        if (piece.pieceType === "ROOK") {
+          if (from.rank === 1 && from.file === "a") {
+            this._castlingAbility &= ~CastlingRights.Q;
+          }
+
+          if (from.rank === 1 && from.file === "h") {
+            this._castlingAbility &= ~CastlingRights.K;
+          }
+
+          if (from.rank === 8 && from.file === "a") {
+            this._castlingAbility &= ~CastlingRights.q;
+          }
+
+          if (from.rank === 8 && from.file === "h") {
+            this._castlingAbility &= ~CastlingRights.k;
+          }
+        }
+
+        if (move.move === "Capture") {
+          if (to.rank === 1 && to.file === "a") {
+            this._castlingAbility &= ~CastlingRights.Q;
+          }
+
+          if (to.rank === 1 && to.file === "h") {
+            this._castlingAbility &= ~CastlingRights.K;
+          }
+
+          if (to.rank === 8 && to.file === "a") {
+            this._castlingAbility &= ~CastlingRights.q;
+          }
+
+          if (to.rank === 8 && to.file === "h") {
+            this._castlingAbility &= ~CastlingRights.k;
+          }
+        }
+
         //FEN stuff
         if (
           move.move === "Capture" ||
@@ -132,6 +178,14 @@ export class Game {
         };
 
         this._board.move(rookFrom, rookTo);
+        if (piece.colour === "WHITE") {
+          this._castlingAbility &= ~CastlingRights.K;
+          this._castlingAbility &= ~CastlingRights.Q;
+        }
+        if (piece.colour === "BLACK") {
+          this._castlingAbility &= ~CastlingRights.k;
+          this._castlingAbility &= ~CastlingRights.q;
+        }
       }
     }
 
@@ -141,7 +195,7 @@ export class Game {
 
   private getFenString(): string {
     if (this._state === "BlackMove" || this._state === "WhiteMove") {
-      return `${this._board.getFenPlacement()} ${
+      return `${this._board.fenPlacement} ${
         this._state === "WhiteMove" ? "w" : "b"
       } ${this.castlingAbilityString()} ${this._enPessantFen} ${
         this._halfMoves

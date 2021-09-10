@@ -96,7 +96,7 @@ export class Board {
     return king;
   };
 
-  getFenPlacement(): string {
+  public get fenPlacement(): string {
     let ranks: string[] = [];
     RankArray.forEach((rank) => {
       let count = 0;

@@ -337,6 +337,9 @@ export class KingValidator extends BaseValidator {
     const rookFile = type === "SHORT" ? "h" : "a";
     const kingRank = this.piece.colour === "WHITE" ? 1 : 8;
 
+    let side = type === "SHORT" ? "k" : "q";
+    side = this.piece.colour === "WHITE" ? side.toUpperCase() : side;
+
     if (this.board.pieceMoved(this.piece)) return false;
 
     const rook = this.board.getPieceAt({ rank: kingRank, file: rookFile });
