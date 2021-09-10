@@ -334,16 +334,17 @@ export class KingValidator extends BaseValidator {
 
   private canCastle(type: "SHORT" | "LONG") {
     const moveDeltas = this.castlingDeltas(type);
-    const rookFile = type === "SHORT" ? "h" : "a";
+
     const kingRank = this.piece.colour === "WHITE" ? 1 : 8;
 
-    let side = type === "SHORT" ? "k" : "q";
-    side = this.piece.colour === "WHITE" ? side.toUpperCase() : side;
+    let side = CastlingRights.None;
+    if (this.piece.colour === "WHITE") {
+      side = type === "SHORT" ? CastlingRights.k : CastlingRights.q;
+    } else {
+      side = type === "SHORT" ? CastlingRights.K : CastlingRights.Q;
+    }
 
-    if (this.board.pieceMoved(this.piece)) return false;
-
-    const rook = this.board.getPieceAt({ rank: kingRank, file: rookFile });
-    if (!(rook.piece && !this.board.pieceMoved(rook.piece))) return false;
+    if (!(this.castlingRights & side)) return false;
 
     return moveDeltas.every((fileDelta) => {
       const newFile = 4 + fileDelta;
