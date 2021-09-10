@@ -21,29 +21,13 @@ export class Board {
     return this._board;
   }
 
-  private _movedPieces: IPiece[];
-
-  constructor(initialPositions: Square[], movedPieces: IPiece[] | [] = []) {
+  constructor(initialPositions: Square[]) {
     this._board = initialPositions;
-    this._movedPieces = movedPieces;
   }
-
-  addToMoved = (piece: IPiece) => {
-    if (!this._movedPieces.includes(piece)) {
-      this._movedPieces.push(piece);
-    }
-  };
-
-  pieceMoved = (piece: IPiece) => {
-    return this._movedPieces.includes(piece);
-  };
 
   clone = () => {
     const board = this._board.map((x) => x.clone());
-    return new Board(
-      board,
-      this._movedPieces.map((_) => _)
-    );
+    return new Board(board);
   };
 
   move = (from: Position, to: Position) => {
@@ -54,7 +38,6 @@ export class Board {
     if (!squareFromPiece) throw new Error("no piece to move");
 
     squareFrom.remove();
-    this.addToMoved(squareFromPiece);
     squareTo.place(squareFromPiece);
   };
 

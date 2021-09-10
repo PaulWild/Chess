@@ -12,6 +12,8 @@ import {
   CastlingRights,
 } from "./types";
 
+const invalidMove: InvalidMove = { move: "INVALID" };
+
 interface IValidMoves {
   getPotentialMoves(position: Position): ValidMoves;
 
@@ -60,26 +62,21 @@ abstract class BaseValidator implements IValidMoves {
     const clone = this.board.clone();
     clone.move(from, to);
 
-    const m: ValidMove | InvalidMove = !getMoveValidator(
-      this.piece,
-      clone
-    ).isKingInCheck(this.piece.colour)
+    return !getMoveValidator(this.piece, clone).isKingInCheck(this.piece.colour)
       ? potentialMove
-      : { move: "INVALID" };
-
-    return m;
+      : invalidMove;
   }
 
   getMoveAtPosition = (
     position: Position,
     rankDelta: number,
     fileDelta: number
-  ): ValidMove | undefined => {
+  ): ValidMove | InvalidMove => {
     const newFile = FileArray.indexOf(position.file) + fileDelta;
     const newRank = position.rank + rankDelta;
 
     if (newRank > 8 || newFile > 7 || newRank < 1 || newFile < 0) {
-      return;
+      return invalidMove;
     }
     return this.checkPosition(newRank as Rank, FileArray[newFile]);
   };
@@ -100,7 +97,7 @@ abstract class BaseValidator implements IValidMoves {
 
       const move = this.checkPosition(newRank as Rank, FileArray[newFile]);
 
-      if (move === undefined) {
+      if (move.move === "INVALID") {
         break;
       }
 
@@ -113,7 +110,7 @@ abstract class BaseValidator implements IValidMoves {
     return validMoves;
   };
 
-  checkPosition = (rank: Rank, file: File): ValidMove | undefined => {
+  checkPosition = (rank: Rank, file: File): ValidMove | InvalidMove => {
     if (this.canTakeAt(rank, file)) {
       return {
         move: "Capture",
@@ -121,36 +118,18 @@ abstract class BaseValidator implements IValidMoves {
         file: file,
       };
     }
-    if (this.canTakeEnPassant(rank, file)) {
-      return {
-        move: "CaptureEnPassant",
-        rank: rank,
-        file: file,
-      };
-    }
     if (this.canMoveTo(rank, file)) {
-      if (
-        this.piece.pieceType === "PAWN" &&
-        !this.board.pieceMoved(this.piece) &&
-        (rank === 4 || rank === 5)
-      ) {
-        return {
-          move: "PawnPush",
-          rank: rank,
-          file: file,
-        };
-      }
       return {
         move: "Move",
         rank: rank,
         file: file,
       };
     }
-    return undefined;
+    return invalidMove;
   };
 
-  isStandardMove = (item: ValidMove | undefined): item is ValidMove => {
-    return !!item;
+  isStandardMove = (item: ValidMove | InvalidMove): item is ValidMove => {
+    return item.move !== "INVALID";
   };
 
   canTakeAt = (rank: Rank, file: File): boolean => {
@@ -159,18 +138,9 @@ abstract class BaseValidator implements IValidMoves {
     return square.piece !== null && square.piece.colour !== this.piece.colour;
   };
 
-  canTakeEnPassant = (rank: Rank, file: File): boolean => {
-    if (this.piece.pieceType !== "PAWN") return false;
-    if (!this.enPassantTarget) return false;
-
-    console.log(this.enPassantTarget);
-    return (
-      this.enPassantTarget.file === file && this.enPassantTarget.rank === rank
-    );
-  };
-
   canMoveTo = (rank: Rank, file: File): boolean => {
-    const pieceAt = this.board.getPieceAt({ rank: rank as Rank, file });
+    const pieceAt = this.board.getPieceAt({ rank: rank, file });
+
     return pieceAt.piece === null;
   };
 
@@ -262,28 +232,63 @@ export class KnightValidator extends BaseValidator {
 
 export class PawnValidator extends BaseValidator {
   getPotentialMoves(from: Position): ValidMoves {
+    const moves: ValidMoves = [];
     const increment = this.piece.colour === "WHITE" ? 1 : -1;
-
-    const moveDeltas = this.board.pieceMoved(this.piece)
-      ? [1 * increment]
-      : [1 * increment, 2 * increment];
+    const pieceMoved = this.pieceMoved(from);
 
     const captureDeltas = [
       [increment, 1],
       [increment, -1],
     ];
 
-    const moves: ValidMoves = moveDeltas
-      .map((rd) => this.getMoveAtPosition(from, rd, 0))
-      .filter(this.isStandardMove)
-      .filter((x) => x.move === "Move" || x.move === "PawnPush");
+    const moveOne = this.getMoveAtPosition(from, increment, 0);
+    if (this.isStandardMove(moveOne)) {
+      moves.push(moveOne);
+    }
+
+    if (
+      this.isStandardMove(moveOne) &&
+      moveOne.move !== "Capture" &&
+      !pieceMoved
+    ) {
+      const newRank = (from.rank + increment * 2) as Rank;
+      const canMoveTwo = this.canMoveTo(newRank, from.file);
+      if (canMoveTwo) {
+        moves.push({
+          move: "PawnPush",
+          rank: newRank,
+          file: from.file,
+        });
+      }
+    }
 
     const captures: ValidMoves = captureDeltas
       .map(([rd, fd]) => this.getMoveAtPosition(from, rd, fd))
       .filter(this.isStandardMove)
-      .filter((x) => x.move === "Capture" || x.move === "CaptureEnPassant");
+      .filter((x) => x.move === "Capture");
+
+    captureDeltas.forEach(([rd, fd]) => {
+      const newRank = (from.rank + rd) as Rank;
+      const newFile = FileArray[FileArray.indexOf(from.file) + fd];
+
+      if (
+        this.enPassantTarget?.file === newFile &&
+        this.enPassantTarget?.rank === newRank
+      ) {
+        captures.push({
+          move: "CaptureEnPassant",
+          rank: newRank,
+          file: newFile,
+        });
+      }
+    });
 
     return [...moves, ...captures];
+  }
+
+  private pieceMoved(from: Position) {
+    const startRank = this.piece.colour === "WHITE" ? 2 : 7;
+    return startRank !== from.rank;
   }
 }
 
