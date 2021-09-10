@@ -2,7 +2,7 @@ import { Position, ValidMoves } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class KnightValidator extends BaseValidator {
-  getPotentialMoves(from: Position): ValidMoves {
+  potentialMoves(from: Position): ValidMoves {
     const moveDeltas = [
       [1, 2],
       [2, 1],

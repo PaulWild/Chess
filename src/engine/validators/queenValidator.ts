@@ -4,20 +4,20 @@ import { Position, ValidMoves } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class QueenValidator extends BaseValidator {
-  getPotentialMoves(from: Position): ValidMoves {
+  potentialMoves(from: Position): ValidMoves {
     return [
       ...new RookValidator(
         this.piece,
         this.board,
         this.enPassantTarget,
         this.castlingRights
-      ).getPotentialMoves(from),
+      ).potentialMoves(from),
       ...new BishopValidator(
         this.piece,
         this.board,
         this.enPassantTarget,
         this.castlingRights
-      ).getPotentialMoves(from),
+      ).potentialMoves(from),
     ];
   }
 }

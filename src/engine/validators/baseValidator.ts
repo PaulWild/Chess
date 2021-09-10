@@ -8,7 +8,6 @@ import {
   ValidMove,
   InvalidMove,
   Rank,
-  PieceColour,
   File,
 } from "../types";
 
@@ -33,19 +32,17 @@ export abstract class BaseValidator implements IValidMoves {
   }
 
   moves(from: Position): ValidMoves {
-    const allMoves = this.getPotentialMoves(from);
+    const allMoves = this.potentialMoves(from);
     return allMoves.filter((x) => {
       const clone = this.board.clone();
       clone.move(from, { rank: x.rank, file: x.file });
 
-      return !getMoveValidator(this.piece, clone).isKingInCheck(
-        this.piece.colour
-      );
+      return !getMoveValidator(this.piece, clone).isKingInCheck();
     });
   }
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove {
-    const allMoves = this.getPotentialMoves(from);
+    const allMoves = this.potentialMoves(from);
 
     const potentialMove = allMoves.find(
       (position) => position.file === to.file && position.rank === to.rank
@@ -56,7 +53,7 @@ export abstract class BaseValidator implements IValidMoves {
     const clone = this.board.clone();
     clone.move(from, to);
 
-    return !getMoveValidator(this.piece, clone).isKingInCheck(this.piece.colour)
+    return !getMoveValidator(this.piece, clone).isKingInCheck()
       ? potentialMove
       : invalidMove;
   }
@@ -138,15 +135,15 @@ export abstract class BaseValidator implements IValidMoves {
     return pieceAt.piece === null;
   };
 
-  isKingInCheck = (colour: PieceColour): Boolean => {
+  isKingInCheck = (): Boolean => {
     const kingPosition = this.board
-      .getPieces(colour)
+      .getPieces(this.piece.colour)
       .find((x) => x.piece?.pieceType === "KING");
 
     return this.board
-      .getPieces(colour === "WHITE" ? "BLACK" : "WHITE")
+      .getPieces(this.piece.colour === "WHITE" ? "BLACK" : "WHITE")
       .flatMap((x) =>
-        getMoveValidator(x.piece as IPiece, this.board).getPotentialMoves({
+        getMoveValidator(x.piece as IPiece, this.board).potentialMoves({
           file: x.file,
           rank: x.rank,
         })
@@ -158,5 +155,5 @@ export abstract class BaseValidator implements IValidMoves {
       );
   };
 
-  abstract getPotentialMoves(from: Position): ValidMoves;
+  abstract potentialMoves(from: Position): ValidMoves;
 }

@@ -7,7 +7,6 @@ import {
   InvalidMove,
   CastlingRights,
 } from "../types";
-import { BaseValidator } from "./baseValidator";
 import { BishopValidator } from "./bishopValidator";
 import { KingValidator } from "./kingValidator";
 import { KnightValidator } from "./knightValidator";
@@ -16,9 +15,13 @@ import { QueenValidator } from "./queenValidator";
 import { RookValidator } from "./rookValidator";
 
 export interface IValidMoves {
-  getPotentialMoves(position: Position): ValidMoves;
+  potentialMoves(position: Position): ValidMoves;
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove;
+
+  moves(from: Position): ValidMoves;
+
+  isKingInCheck(): Boolean;
 }
 
 export const getMoveValidator = (
@@ -26,7 +29,7 @@ export const getMoveValidator = (
   board: Board,
   enPessantTarget: Position | undefined = undefined,
   castlingRights: CastlingRights = CastlingRights.None
-): BaseValidator => {
+): IValidMoves => {
   switch (piece.pieceType) {
     case "BISHOP":
       return new BishopValidator(piece, board, enPessantTarget, castlingRights);

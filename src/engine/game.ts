@@ -219,7 +219,7 @@ export class Game {
   private checkMate(colour: PieceColour) {
     const king = this.getKing(colour);
     const validator = getMoveValidator(king.piece as IPiece, this._board);
-    const kingInCheck = validator.isKingInCheck(colour);
+    const kingInCheck = validator.isKingInCheck();
 
     if (kingInCheck) {
       const pieces = this._board.getPieces(colour).flatMap((x) => {
@@ -282,6 +282,5 @@ export class Game {
         break;
       }
     }
-    console.log(this._state);
   }
 }

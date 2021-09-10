@@ -4,7 +4,7 @@ import { BaseValidator } from "./baseValidator";
 import { getMoveValidator } from ".";
 
 export class KingValidator extends BaseValidator {
-  getPotentialMoves(from: Position): ValidMoves {
+  potentialMoves(from: Position): ValidMoves {
     let validMoves: ValidMoves = [];
     const moveDeltas = [
       [1, 1],
@@ -77,9 +77,7 @@ export class KingValidator extends BaseValidator {
           { rank: kingRank, file: FileArray[newFile] }
         );
 
-        return !getMoveValidator(this.piece, clone).isKingInCheck(
-          this.piece.colour
-        );
+        return !getMoveValidator(this.piece, clone).isKingInCheck();
       }
       return false;
     });

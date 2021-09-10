@@ -3,7 +3,7 @@ import { Position, Rank, ValidMoves } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class PawnValidator extends BaseValidator {
-  getPotentialMoves(from: Position): ValidMoves {
+  potentialMoves(from: Position): ValidMoves {
     const moves: ValidMoves = [];
     const increment = this.piece.colour === "WHITE" ? 1 : -1;
     const pieceMoved = this.pieceMoved(from);
