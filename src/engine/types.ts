@@ -67,8 +67,8 @@ export type GameState =
   | "WhiteWin"
   | "BlackWin"
   | "StaleMate"
-  | "DrawRepition3"
-  | "DrawRepition5";
+  | "DrawRepetition3"
+  | "DrawRepetition5";
 
 export enum CastlingRights {
   None = 0,

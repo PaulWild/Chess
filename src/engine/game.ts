@@ -11,6 +11,7 @@ import {
   Position,
   Rank,
 } from "./types";
+import { boardAsFenPlacement, toFenString } from "./fen";
 
 export class Game {
   private _board: Board;
@@ -28,22 +29,33 @@ export class Game {
       CastlingRights.K | CastlingRights.Q | CastlingRights.k | CastlingRights.q;
   }
 
+  private seenBoardPositions: Record<string, number> = {};
+
   // Full moves, used in FEN notation
   private _fullMoves: number;
+
+  public get FullMoves() {
+    return this._fullMoves;
+  }
 
   // Hald moves, used in FEN notation
   private _halfMoves: number;
 
-  // Game Engine knows about en-Pessant
-  private get _enPessantFen(): string {
-    return this._enPessantSquare
-      ? `${this._enPessantSquare.file}${this._enPessantSquare.rank}`
-      : "-";
+  public get HalfMoves() {
+    return this._halfMoves;
   }
 
   private _enPessantSquare: Position | undefined;
 
+  public get enPassantSquare() {
+    return this._enPessantSquare;
+  }
+
   private _castlingAbility: CastlingRights;
+
+  public get CastlingAbility() {
+    return this._castlingAbility;
+  }
 
   private _state: GameState;
 
@@ -190,30 +202,15 @@ export class Game {
       }
     }
 
-    this.changeState();
-    console.log(this.getFenString());
-  }
-
-  private getFenString(): string {
-    if (this._state === "BlackMove" || this._state === "WhiteMove") {
-      return `${this._board.fenPlacement} ${
-        this._state === "WhiteMove" ? "w" : "b"
-      } ${this.castlingAbilityString()} ${this._enPessantFen} ${
-        this._halfMoves
-      } ${this._fullMoves}`;
+    const boardFen = boardAsFenPlacement(this.board);
+    if (this.seenBoardPositions[boardFen]) {
+      this.seenBoardPositions[boardFen] += 1;
     } else {
-      return "";
+      this.seenBoardPositions[boardFen] = 1;
     }
-  }
 
-  private castlingAbilityString(): string {
-    let str = "";
-    if (this._castlingAbility & CastlingRights.K) str += "K";
-    if (this._castlingAbility & CastlingRights.Q) str += "Q";
-    if (this._castlingAbility & CastlingRights.k) str += "k";
-    if (this._castlingAbility & CastlingRights.q) str += "q";
-
-    return str === "" ? "-" : str;
+    this.changeState();
+    console.log(toFenString(this));
   }
 
   private checkMate(colour: PieceColour) {
@@ -253,12 +250,17 @@ export class Game {
   };
 
   private changeState() {
+    if (Object.values(this.seenBoardPositions).includes(3)) {
+      this._state = "DrawRepetition3";
+      return;
+    }
+
     switch (this._state) {
       case "BlackWin":
       case "StaleMate":
       case "WhiteWin":
-      case "DrawRepition3":
-      case "DrawRepition5":
+      case "DrawRepetition3":
+      case "DrawRepetition5":
         break;
       case "WhiteMove": {
         if (this.checkMate("BLACK")) {

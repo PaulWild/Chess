@@ -129,6 +129,8 @@ const gameStateAsString = (state: GameState) => {
       return "White to move";
     case "WhiteWin":
       return "White Won!";
+    case "DrawRepetition3":
+      return "Draw by repetition";
     default:
       return state;
   }
