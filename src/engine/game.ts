@@ -1,7 +1,8 @@
-import { getMoveValidator } from "./basePiece";
+import { getMoveValidator } from "./validators";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
 import { IPiece } from "./pieces";
+import { Square } from "./square";
 import {
   CastlingRights,
   File,
@@ -205,7 +206,6 @@ export class Game {
     }
   }
 
-  //CatlingRights.K | CatlingRights.Q | CatlingRights.k | CatlingRights.q;
   private castlingAbilityString(): string {
     let str = "";
     if (this._castlingAbility & CastlingRights.K) str += "K";
@@ -217,7 +217,7 @@ export class Game {
   }
 
   private checkMate(colour: PieceColour) {
-    const king = this._board.getKing(colour);
+    const king = this.getKing(colour);
     const validator = getMoveValidator(king.piece as IPiece, this._board);
     const kingInCheck = validator.isKingInCheck(colour);
 
@@ -240,6 +240,17 @@ export class Game {
 
     return hasMoves.length === 0;
   }
+
+  private getKing = (colour: PieceColour): Square => {
+    const king = this.board
+      .getPieces(colour)
+      .find((x) => x.piece?.pieceType === "KING");
+
+    if (!king) {
+      throw new Error("Where's the king?");
+    }
+    return king;
+  };
 
   private changeState() {
     switch (this._state) {

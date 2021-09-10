@@ -68,17 +68,6 @@ export class Board {
     );
   };
 
-  getKing = (colour: PieceColour): Square => {
-    const king = this.board.find(
-      (x) => x.piece?.pieceType === "KING" && x.piece.colour === colour
-    );
-
-    if (!king) {
-      throw new Error("Where's the king?");
-    }
-    return king;
-  };
-
   public get fenPlacement(): string {
     let ranks: string[] = [];
     RankArray.forEach((rank) => {
