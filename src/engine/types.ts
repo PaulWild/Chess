@@ -69,3 +69,11 @@ export type GameState =
   | "StaleMate"
   | "DrawRepition3"
   | "DrawRepition5";
+
+export enum CatlingRights {
+  None = 0,
+  K = 1 << 0,
+  Q = 1 << 1,
+  k = 1 << 2,
+  q = 1 << 3,
+}

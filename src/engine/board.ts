@@ -25,6 +25,7 @@ export class Board {
   public get enPassant(): Position | undefined {
     return this._enPassant;
   }
+
   public set enPassant(value: Position | undefined) {
     this._enPassant = value;
   }
@@ -109,4 +110,55 @@ export class Board {
     }
     return king;
   };
+
+  getFenPlacement(): string {
+    let ranks: string[] = [];
+    RankArray.forEach((rank) => {
+      let count = 0;
+      let rankString = "";
+      FileArray.forEach((file) => {
+        let piece = this.getPieceAt({ rank, file });
+        if (piece.piece) {
+          if (count > 0) {
+            rankString += count;
+            count = 0;
+          }
+          let str = "";
+          switch (piece.piece!.pieceType) {
+            case "BISHOP":
+              str = "b";
+              break;
+            case "KING":
+              str = "k";
+              break;
+            case "KNIGHT":
+              str = "n";
+              break;
+            case "PAWN":
+              str = "p";
+              break;
+            case "QUEEN":
+              str = "q";
+              break;
+            case "ROOK":
+              str = "r";
+              break;
+          }
+          if (piece.piece.colour === "WHITE") {
+            str = str.toUpperCase();
+          }
+
+          rankString += str;
+        } else if (file === "h") {
+          rankString += ++count;
+        }
+        if (!piece.piece) {
+          count += 1;
+        }
+      });
+      ranks.push(rankString);
+    });
+
+    return ranks.join("/");
+  }
 }
