@@ -2,7 +2,14 @@ import { getMoveValidator } from "./basePiece";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
 import { IPiece } from "./pieces";
-import { CatlingRights, File, GameState, PieceColour, Position } from "./types";
+import {
+  CastlingRights,
+  File,
+  GameState,
+  PieceColour,
+  Position,
+  Rank,
+} from "./types";
 
 export class Game {
   private _board: Board;
@@ -17,9 +24,8 @@ export class Game {
     this._state = "WhiteMove";
     this._fullMoves = 1;
     this._halfMoves = 0;
-    this._enPessantFen = "-";
     this._castlingAbility =
-      CatlingRights.K | CatlingRights.Q | CatlingRights.k | CatlingRights.q;
+      CastlingRights.K | CastlingRights.Q | CastlingRights.k | CastlingRights.q;
   }
 
   // Full moves, used in FEN notation
@@ -29,9 +35,15 @@ export class Game {
   private _halfMoves: number;
 
   // Game Engine knows about en-Pessant
-  private _enPessantFen: String;
+  private get _enPessantFen(): string {
+    return this._enPessantSquare
+      ? `${this._enPessantSquare.file}${this._enPessantSquare.rank}`
+      : "-";
+  }
 
-  private _castlingAbility: CatlingRights;
+  private _enPessantSquare: Position | undefined;
+
+  private _castlingAbility: CastlingRights;
 
   private _state: GameState;
 
@@ -57,7 +69,12 @@ export class Game {
     if (!square.piece) throw new Error("No Piece to move");
 
     const piece = square.piece;
-    const move = getMoveValidator(square.piece, this._board).canMove(from, to);
+    const move = getMoveValidator(
+      square.piece,
+      this._board,
+      this._enPessantSquare,
+      this._castlingAbility
+    ).canMove(from, to);
 
     switch (move.move) {
       case "INVALID":
@@ -67,26 +84,27 @@ export class Game {
       case "CaptureEnPassant":
       case "Capture": {
         if (move.move === "CaptureEnPassant") {
-          if (!this._board.enPassant) throw new Error("no enPassant");
-          this._board.remove(this._board.enPassant);
+          if (!this._enPessantSquare) throw new Error("no enPassant");
+          this._board.remove({
+            rank: from.rank,
+            file: this._enPessantSquare.file,
+          });
         }
         this._board.move(from, to);
 
         if (move.move === "PawnPush") {
-          this._board.enPassant = to;
           let r = to.rank;
           if (piece.colour === "WHITE") {
             r -= 1;
           } else {
             r += 1;
           }
-          this._enPessantFen = `${to.file}${r}`;
+          this._enPessantSquare = { rank: r as Rank, file: move.file };
         } else {
-          this._board.enPassant = undefined;
-          this._enPessantFen = "-";
+          this._enPessantSquare = undefined;
         }
 
-        // //FEN stuff
+        //FEN stuff
         if (
           move.move === "Capture" ||
           move.move === "CaptureEnPassant" ||
@@ -136,10 +154,10 @@ export class Game {
   //CatlingRights.K | CatlingRights.Q | CatlingRights.k | CatlingRights.q;
   private castlingAbilityString(): string {
     let str = "";
-    if (this._castlingAbility & CatlingRights.K) str += "K";
-    if (this._castlingAbility & CatlingRights.Q) str += "Q";
-    if (this._castlingAbility & CatlingRights.k) str += "k";
-    if (this._castlingAbility & CatlingRights.q) str += "q";
+    if (this._castlingAbility & CastlingRights.K) str += "K";
+    if (this._castlingAbility & CastlingRights.Q) str += "Q";
+    if (this._castlingAbility & CastlingRights.k) str += "k";
+    if (this._castlingAbility & CastlingRights.q) str += "q";
 
     return str === "" ? "-" : str;
   }

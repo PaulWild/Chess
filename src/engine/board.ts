@@ -21,24 +21,10 @@ export class Board {
     return this._board;
   }
 
-  private _enPassant: Position | undefined;
-  public get enPassant(): Position | undefined {
-    return this._enPassant;
-  }
-
-  public set enPassant(value: Position | undefined) {
-    this._enPassant = value;
-  }
-
   private _movedPieces: IPiece[];
 
-  constructor(
-    initialPositions: Square[],
-    enPassant: Position | undefined = undefined,
-    movedPieces: IPiece[] | [] = []
-  ) {
+  constructor(initialPositions: Square[], movedPieces: IPiece[] | [] = []) {
     this._board = initialPositions;
-    this.enPassant = enPassant;
     this._movedPieces = movedPieces;
   }
 
@@ -56,7 +42,6 @@ export class Board {
     const board = this._board.map((x) => x.clone());
     return new Board(
       board,
-      this._enPassant,
       this._movedPieces.map((_) => _)
     );
   };

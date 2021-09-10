@@ -70,7 +70,7 @@ export type GameState =
   | "DrawRepition3"
   | "DrawRepition5";
 
-export enum CatlingRights {
+export enum CastlingRights {
   None = 0,
   K = 1 << 0,
   Q = 1 << 1,

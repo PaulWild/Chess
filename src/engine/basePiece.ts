@@ -9,6 +9,7 @@ import {
   ValidMoves,
   File,
   PieceColour,
+  CastlingRights,
 } from "./types";
 
 interface IValidMoves {
@@ -20,10 +21,19 @@ interface IValidMoves {
 abstract class BaseValidator implements IValidMoves {
   piece: IPiece;
   board: Board;
+  enPassantTarget: Position | undefined;
+  castlingRights: CastlingRights;
 
-  constructor(piece: IPiece, board: Board) {
+  constructor(
+    piece: IPiece,
+    board: Board,
+    enPassantTarget: Position | undefined,
+    castlingRights: CastlingRights
+  ) {
     this.piece = piece;
     this.board = board;
+    this.enPassantTarget = enPassantTarget;
+    this.castlingRights = castlingRights;
   }
 
   moves(from: Position): ValidMoves {
@@ -151,12 +161,11 @@ abstract class BaseValidator implements IValidMoves {
 
   canTakeEnPassant = (rank: Rank, file: File): boolean => {
     if (this.piece.pieceType !== "PAWN") return false;
-    if (!this.board.enPassant) return false;
+    if (!this.enPassantTarget) return false;
 
+    console.log(this.enPassantTarget);
     return (
-      this.board.enPassant.file === file &&
-      this.board.enPassant.rank ===
-        rank + (this.piece.colour === "WHITE" ? -1 : 1)
+      this.enPassantTarget.file === file && this.enPassantTarget.rank === rank
     );
   };
 
@@ -211,8 +220,18 @@ export class RookValidator extends BaseValidator {
 export class QueenValidator extends BaseValidator {
   getPotentialMoves(from: Position): ValidMoves {
     return [
-      ...new RookValidator(this.piece, this.board).getPotentialMoves(from),
-      ...new BishopValidator(this.piece, this.board).getPotentialMoves(from),
+      ...new RookValidator(
+        this.piece,
+        this.board,
+        this.enPassantTarget,
+        this.castlingRights
+      ).getPotentialMoves(from),
+      ...new BishopValidator(
+        this.piece,
+        this.board,
+        this.enPassantTarget,
+        this.castlingRights
+      ).getPotentialMoves(from),
     ];
   }
 }
@@ -349,20 +368,22 @@ export class KingValidator extends BaseValidator {
 
 export const getMoveValidator = (
   piece: IPiece,
-  board: Board
+  board: Board,
+  enPessantTarget: Position | undefined = undefined,
+  castlingRights: CastlingRights = CastlingRights.None
 ): BaseValidator => {
   switch (piece.pieceType) {
     case "BISHOP":
-      return new BishopValidator(piece, board);
+      return new BishopValidator(piece, board, enPessantTarget, castlingRights);
     case "KING":
-      return new KingValidator(piece, board);
+      return new KingValidator(piece, board, enPessantTarget, castlingRights);
     case "KNIGHT":
-      return new KnightValidator(piece, board);
+      return new KnightValidator(piece, board, enPessantTarget, castlingRights);
     case "PAWN":
-      return new PawnValidator(piece, board);
+      return new PawnValidator(piece, board, enPessantTarget, castlingRights);
     case "QUEEN":
-      return new QueenValidator(piece, board);
+      return new QueenValidator(piece, board, enPessantTarget, castlingRights);
     case "ROOK":
-      return new RookValidator(piece, board);
+      return new RookValidator(piece, board, enPessantTarget, castlingRights);
   }
 };
