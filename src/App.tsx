@@ -10,7 +10,7 @@ import {
   DraggableContextProvider,
 } from "./components/game-context";
 import { useContext } from "react";
-import { File, Rank } from "./engine/types";
+import { File, GameState, Rank } from "./engine/types";
 import {
   FileArray,
   isLightSquare,
@@ -117,9 +117,27 @@ const GridPosition = ({ rank, file, bound }: gridProps) => {
   );
 };
 
+const gameStateAsString = (state: GameState) => {
+  switch (state) {
+    case "BlackMove":
+      return "Black to move";
+    case "BlackWin":
+      return "Black Won!";
+    case "StaleMate":
+      return "Stalemate";
+    case "WhiteMove":
+      return "White to move";
+    case "WhiteWin":
+      return "White Won!";
+    default:
+      return state;
+  }
+};
+
 const Board = () => {
   const chessGrid = useRef<HTMLDivElement>(null);
   const [bound, setBound] = useState<DOMRect>();
+  const [state] = useContext(DraggableContext);
 
   const onWindowResize = useCallback(() => {
     setBound(chessGrid.current?.getBoundingClientRect());
@@ -140,6 +158,7 @@ const Board = () => {
           ))
         )}
       </div>
+      <div className={styles.infoPane}>{gameStateAsString(state.state)}</div>
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import { Board } from "../engine/board";
 import { Game } from "../engine/game";
-import { File, Rank } from "../engine/types";
+import { File, GameState, Rank } from "../engine/types";
 
 const game = new Game();
-const initialState: State = { board: game.board };
+const initialState: State = {
+  board: game.board,
+  state: game.state,
+};
 
 const GameContext = createContext<[State, Dispatch<Action>]>([
   initialState,
@@ -15,6 +18,7 @@ type State = {
   activePiece?: ActivePiece;
   threatenedSquare?: { rank: Rank; file: File };
   board: Board;
+  state: GameState;
 };
 
 type ActivePiece = {
@@ -82,6 +86,7 @@ const reducer = (state: State, action: Action): State => {
 
       return {
         board: game.board,
+        state: game.state,
       };
     }
   }
