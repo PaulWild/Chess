@@ -11,12 +11,8 @@ import {
 } from "./components/game-context";
 import { useContext } from "react";
 import { File, GameState, Rank } from "./engine/types";
-import {
-  FileArray,
-  isLightSquare,
-  RankArray,
-  Board as GameBoard,
-} from "./engine/board";
+import { FileArray, RankArray, Board as GameBoard } from "./engine/board";
+import { isLightSquare } from "./engine/square";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
   const square = currentBoard.getPieceAt({ rank, file });

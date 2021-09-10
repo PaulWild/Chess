@@ -1,3 +1,4 @@
+import { FileArray } from "./board";
 import { IPiece } from "./pieces";
 import { Empty, Rank, File } from "./types";
 
@@ -29,3 +30,12 @@ export class Square {
     return new Square(this.rank, this.file, this.piece);
   }
 }
+
+export const isLightSquare = (rank: Rank, file: File) => {
+  if (rank % 2 === 0 && FileArray.indexOf(file) % 2 === 0) {
+    return true;
+  } else if (rank % 2 === 1 && FileArray.indexOf(file) % 2 === 1) {
+    return true;
+  }
+  return false;
+};

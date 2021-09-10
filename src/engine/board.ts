@@ -5,15 +5,6 @@ import { File, PieceColour, Position, Rank } from "./types";
 export const RankArray: Rank[] = [8, 7, 6, 5, 4, 3, 2, 1];
 export const FileArray: File[] = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
-export const isLightSquare = (rank: Rank, file: File) => {
-  if (rank % 2 === 0 && FileArray.indexOf(file) % 2 === 0) {
-    return true;
-  } else if (rank % 2 === 1 && FileArray.indexOf(file) % 2 === 1) {
-    return true;
-  }
-  return false;
-};
-
 export class Board {
   private _board: Square[];
 
@@ -67,55 +58,4 @@ export class Board {
       (x) => x.piece !== null && x.piece.colour === colour
     );
   };
-
-  public get fenPlacement(): string {
-    let ranks: string[] = [];
-    RankArray.forEach((rank) => {
-      let count = 0;
-      let rankString = "";
-      FileArray.forEach((file) => {
-        let piece = this.getPieceAt({ rank, file });
-        if (piece.piece) {
-          if (count > 0) {
-            rankString += count;
-            count = 0;
-          }
-          let str = "";
-          switch (piece.piece!.pieceType) {
-            case "BISHOP":
-              str = "b";
-              break;
-            case "KING":
-              str = "k";
-              break;
-            case "KNIGHT":
-              str = "n";
-              break;
-            case "PAWN":
-              str = "p";
-              break;
-            case "QUEEN":
-              str = "q";
-              break;
-            case "ROOK":
-              str = "r";
-              break;
-          }
-          if (piece.piece.colour === "WHITE") {
-            str = str.toUpperCase();
-          }
-
-          rankString += str;
-        } else if (file === "h") {
-          rankString += ++count;
-        }
-        if (!piece.piece) {
-          count += 1;
-        }
-      });
-      ranks.push(rankString);
-    });
-
-    return ranks.join("/");
-  }
 }
