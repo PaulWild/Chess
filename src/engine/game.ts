@@ -1,7 +1,8 @@
 import { getMoveValidator } from "./basePiece";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
-import { File, GameState, Position } from "./types";
+import { IPiece } from "./pieces";
+import { File, GameState, PieceColour, Position } from "./types";
 
 export class Game {
   private _board: Board;
@@ -36,11 +37,9 @@ export class Game {
       return;
     }
 
-    console.log(square);
     if (!square.piece) throw new Error("No Piece to move");
 
     const move = getMoveValidator(square.piece, this._board).canMove(from, to);
-    console.log(move);
 
     switch (move.move) {
       case "INVALID":
@@ -79,6 +78,63 @@ export class Game {
       }
     }
 
-    this._state = this._state === "WhiteMove" ? "BlackMove" : "WhiteMove";
+    this.changeState();
+  }
+
+  private checkMate(colour: PieceColour) {
+    const king = this._board.getKing(colour);
+    const validator = getMoveValidator(king.piece as IPiece, this._board);
+    const kingInCheck = validator.isKingInCheck(colour);
+
+    if (kingInCheck) {
+      const pieces = this._board.getPieces(colour).flatMap((x) => {
+        const validator = getMoveValidator(x.piece as IPiece, this._board);
+        return validator.moves({ rank: x.rank, file: x.file });
+      });
+      return pieces.length === 0;
+    }
+    return false;
+  }
+
+  private staleMate(colour: PieceColour) {
+    const pieces = this._board.getPieces(colour);
+    const hasMoves = pieces.flatMap((x) => {
+      const validator = getMoveValidator(x.piece as IPiece, this._board);
+      return validator.moves({ rank: x.rank, file: x.file });
+    });
+
+    return hasMoves.length === 0;
+  }
+
+  private changeState() {
+    switch (this._state) {
+      case "BlackWin":
+      case "StaleMate":
+      case "WhiteWin":
+      case "DrawRepition3":
+      case "DrawRepition5":
+        break;
+      case "WhiteMove": {
+        if (this.checkMate("BLACK")) {
+          this._state = "WhiteWin";
+        } else if (this.staleMate("BLACK")) {
+          this._state = "StaleMate";
+        } else {
+          this._state = "BlackMove";
+        }
+        break;
+      }
+      case "BlackMove": {
+        if (this.checkMate("WHITE")) {
+          this._state = "BlackWin";
+        } else if (this.staleMate("WHITE")) {
+          this._state = "StaleMate";
+        } else {
+          this._state = "WhiteMove";
+        }
+        break;
+      }
+    }
+    console.log(this._state);
   }
 }

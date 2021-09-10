@@ -26,10 +26,21 @@ abstract class BaseValidator implements IValidMoves {
     this.board = board;
   }
 
+  moves(from: Position): ValidMoves {
+    const allMoves = this.getPotentialMoves(from);
+    return allMoves.filter((x) => {
+      const clone = this.board.clone();
+      clone.move(from, { rank: x.rank, file: x.file });
+
+      return !getMoveValidator(this.piece, clone).isKingInCheck(
+        this.piece.colour
+      );
+    });
+  }
+
   canMove(from: Position, to: Position): ValidMove | InvalidMove {
     const allMoves = this.getPotentialMoves(from);
 
-    console.log(allMoves);
     const potentialMove = allMoves.find(
       (position) => position.file === to.file && position.rank === to.rank
     );
