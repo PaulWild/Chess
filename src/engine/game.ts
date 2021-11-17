@@ -2,7 +2,6 @@ import { getMoveValidator } from "./validators";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
 import { IPiece } from "./pieces";
-import { Square } from "./square";
 import {
   CastlingRights,
   File,
@@ -11,98 +10,221 @@ import {
   Position,
   Rank,
 } from "./types";
-import { boardAsFenPlacement, toFenString } from "./fen";
+import { boardAsFenPlacement } from "./fen";
 
+type GameIntState = {
+  board: Board;
+  halfMoves: number;
+  fullMoves: number;
+  state: GameState;
+  castlingAbility: CastlingRights;
+  enPassantSquare: Position | undefined;
+};
 export class Game {
-  private _board: Board;
-
   public get board(): Board {
-    return this._board;
+    return this._intState.board;
   }
 
-  constructor() {
-    this._board = new Board(buildBoard());
-    this._state = "WhiteMove";
-    this._fullMoves = 1;
-    this._halfMoves = 0;
-    this._castlingAbility =
-      CastlingRights.K | CastlingRights.Q | CastlingRights.k | CastlingRights.q;
+  private _intState: GameIntState;
+
+  /**
+   *
+   */
+  constructor(
+    board: Board = new Board(buildBoard()),
+    state: GameState = "WhiteMove",
+    fullMoves: number = 0,
+    halfMoves: number = 0,
+    castlingAbility: CastlingRights = CastlingRights.K |
+      CastlingRights.Q |
+      CastlingRights.k |
+      CastlingRights.q,
+    enPassantSquare: undefined | Position = undefined
+  ) {
+    this._intState = {
+      board,
+      halfMoves,
+      fullMoves,
+      castlingAbility,
+      state,
+      enPassantSquare,
+    };
+  }
+
+  clone() {
+    return new Game(
+      this._intState.board.clone(),
+      this._intState.state,
+      this._intState.fullMoves,
+      this._intState.halfMoves,
+      this._intState.castlingAbility,
+      this._intState.enPassantSquare
+    );
   }
 
   private seenBoardPositions: Record<string, number> = {};
 
-  // Full moves, used in FEN notation
-  private _fullMoves: number;
-
   public get FullMoves() {
-    return this._fullMoves;
+    return this._intState.fullMoves;
   }
-
-  // Hald moves, used in FEN notation
-  private _halfMoves: number;
 
   public get HalfMoves() {
-    return this._halfMoves;
+    return this._intState.halfMoves;
   }
-
-  private _enPessantSquare: Position | undefined;
 
   public get enPassantSquare() {
-    return this._enPessantSquare;
+    return this._intState.enPassantSquare;
   }
-
-  private _castlingAbility: CastlingRights;
 
   public get CastlingAbility() {
-    return this._castlingAbility;
+    return this._intState.castlingAbility;
   }
-
-  private _state: GameState;
 
   public get state(): GameState {
-    return this._state;
+    return this._intState.state;
   }
 
-  move(from: Position, to: Position) {
-    if (this._state !== "BlackMove" && this._state !== "WhiteMove") {
-      return;
+  moves(colour: PieceColour) {
+    const pieces = this.board.getPieces(colour);
+
+    const moves = pieces.flatMap((x) => {
+      const cloned = this.clone();
+      const validators = getMoveValidator(
+        x.piece as IPiece,
+        cloned,
+        cloned.enPassantSquare,
+        cloned.CastlingAbility
+      );
+      const potential = validators.potentialMoves({
+        rank: x.rank,
+        file: x.file,
+      });
+
+      return potential.filter((y) => {
+        const clone = this.clone();
+        return clone.move(
+          { file: x.file, rank: x.rank },
+          { file: y.file, rank: y.rank }
+        );
+      });
+    });
+    return moves;
+  }
+
+  movesPerf(colour: PieceColour) {
+    const pieces = this.board.getPieces(colour);
+
+    const moves = pieces.flatMap((x) => {
+      const validators = getMoveValidator(
+        x.piece as IPiece,
+        this,
+        this.enPassantSquare,
+        this.CastlingAbility
+      );
+      const potential = validators.potentialMoves({
+        rank: x.rank,
+        file: x.file,
+      });
+
+      return potential
+        .filter((y) => {
+          const clone = this.clone();
+          return clone.move(
+            { file: x.file, rank: x.rank },
+            { file: y.file, rank: y.rank }
+          );
+        })
+        .map((z) => ({ move: z, from: { file: x.file, rank: x.rank } }));
+    });
+    return moves;
+  }
+
+  move(from: Position, to: Position): Boolean {
+    const square = this.board.getPieceAt(from);
+
+    if (!square.piece) {
+      throw new Error("No Piece to move");
     }
 
-    const square = this._board.getPieceAt(from);
+    const piece = square.piece;
 
-    if (this._state === "BlackMove" && square.piece?.colour === "WHITE") {
-      return;
+    const state = {
+      ...this._intState,
+      board: this.board.clone(),
+    };
+
+    const madeMove = this.move2(from, to);
+    if (madeMove && this.kingInCheck(piece.colour)) {
+      this._intState = state;
+      return false;
+    }
+    if (madeMove) {
+      this.changeState(piece.colour);
     }
 
-    if (this._state === "WhiteMove" && square.piece?.colour === "BLACK") {
-      return;
-    }
+    return madeMove;
+  }
+
+  kingInCheck(colour: PieceColour) {
+    const kingPosition = this.board
+      .getPieces(colour)
+      .find((x) => x.piece?.pieceType === "KING");
+
+    return this.board
+      .getPieces(colour === "WHITE" ? "BLACK" : "WHITE")
+      .flatMap((x) =>
+        getMoveValidator(x.piece as IPiece, this).potentialMoves({
+          file: x.file,
+          rank: x.rank,
+        })
+      )
+      .some(
+        (x) =>
+          (x as Position).file === kingPosition?.file &&
+          (x as Position).rank === kingPosition?.rank
+      );
+  }
+
+  move2(from: Position, to: Position): Boolean {
+    const square = this.board.getPieceAt(from);
 
     if (!square.piece) throw new Error("No Piece to move");
+
+    if (this.state === "BlackMove" && square.piece?.colour === "WHITE") {
+      return false;
+    }
+
+    if (this.state === "WhiteMove" && square.piece?.colour === "BLACK") {
+      return false;
+    }
+
+    if (this.state !== "WhiteMove" && this.state !== "BlackMove") {
+      return false;
+    }
 
     const piece = square.piece;
     const move = getMoveValidator(
       square.piece,
-      this._board,
-      this._enPessantSquare,
-      this._castlingAbility
+      this,
+      this.enPassantSquare,
+      this.CastlingAbility
     ).canMove(from, to);
 
     switch (move.move) {
       case "INVALID":
-        return;
+        return false;
       case "Move":
       case "PawnPush":
       case "CaptureEnPassant":
       case "Capture": {
         if (move.move === "CaptureEnPassant") {
-          if (!this._enPessantSquare) throw new Error("no enPassant");
-          this._board.remove({
+          if (!this.enPassantSquare) throw new Error("no enPassant");
+          this.board.remove({
             rank: from.rank,
-            file: this._enPessantSquare.file,
+            file: this.enPassantSquare.file,
           });
         }
-        this._board.move(from, to);
+        this.board.move(from, to);
 
         if (move.move === "PawnPush") {
           let r = to.rank;
@@ -111,55 +233,55 @@ export class Game {
           } else {
             r += 1;
           }
-          this._enPessantSquare = { rank: r as Rank, file: move.file };
+          this._intState.enPassantSquare = { rank: r as Rank, file: move.file };
         } else {
-          this._enPessantSquare = undefined;
+          this._intState.enPassantSquare = undefined;
         }
 
         if (piece.pieceType === "KING") {
           if (piece.colour === "WHITE") {
-            this._castlingAbility &= ~CastlingRights.K;
-            this._castlingAbility &= ~CastlingRights.Q;
+            this._intState.castlingAbility &= ~CastlingRights.K;
+            this._intState.castlingAbility &= ~CastlingRights.Q;
           }
           if (piece.colour === "BLACK") {
-            this._castlingAbility &= ~CastlingRights.k;
-            this._castlingAbility &= ~CastlingRights.q;
+            this._intState.castlingAbility &= ~CastlingRights.k;
+            this._intState.castlingAbility &= ~CastlingRights.q;
           }
         }
 
         if (piece.pieceType === "ROOK") {
           if (from.rank === 1 && from.file === "a") {
-            this._castlingAbility &= ~CastlingRights.Q;
+            this._intState.castlingAbility &= ~CastlingRights.Q;
           }
 
           if (from.rank === 1 && from.file === "h") {
-            this._castlingAbility &= ~CastlingRights.K;
+            this._intState.castlingAbility &= ~CastlingRights.K;
           }
 
           if (from.rank === 8 && from.file === "a") {
-            this._castlingAbility &= ~CastlingRights.q;
+            this._intState.castlingAbility &= ~CastlingRights.q;
           }
 
           if (from.rank === 8 && from.file === "h") {
-            this._castlingAbility &= ~CastlingRights.k;
+            this._intState.castlingAbility &= ~CastlingRights.k;
           }
         }
 
         if (move.move === "Capture") {
           if (to.rank === 1 && to.file === "a") {
-            this._castlingAbility &= ~CastlingRights.Q;
+            this._intState.castlingAbility &= ~CastlingRights.Q;
           }
 
           if (to.rank === 1 && to.file === "h") {
-            this._castlingAbility &= ~CastlingRights.K;
+            this._intState.castlingAbility &= ~CastlingRights.K;
           }
 
           if (to.rank === 8 && to.file === "a") {
-            this._castlingAbility &= ~CastlingRights.q;
+            this._intState.castlingAbility &= ~CastlingRights.q;
           }
 
           if (to.rank === 8 && to.file === "h") {
-            this._castlingAbility &= ~CastlingRights.k;
+            this._intState.castlingAbility &= ~CastlingRights.k;
           }
         }
 
@@ -170,15 +292,15 @@ export class Game {
           move.move === "PawnPush" ||
           (move.move === "Move" && piece.pieceType === "PAWN")
         ) {
-          this._halfMoves = 0;
+          this._intState.halfMoves = 0;
         } else {
-          this._halfMoves += 1;
+          this._intState.halfMoves += 1;
         }
 
         break;
       }
       case "Castle": {
-        this._board.move(from, to);
+        this.board.move(from, to);
 
         const rookFrom = {
           rank: square.rank,
@@ -190,14 +312,14 @@ export class Game {
           file: move.type === "SHORT" ? "f" : ("d" as File),
         };
 
-        this._board.move(rookFrom, rookTo);
+        this.board.move(rookFrom, rookTo);
         if (piece.colour === "WHITE") {
-          this._castlingAbility &= ~CastlingRights.K;
-          this._castlingAbility &= ~CastlingRights.Q;
+          this._intState.castlingAbility &= ~CastlingRights.K;
+          this._intState.castlingAbility &= ~CastlingRights.Q;
         }
         if (piece.colour === "BLACK") {
-          this._castlingAbility &= ~CastlingRights.k;
-          this._castlingAbility &= ~CastlingRights.q;
+          this._intState.castlingAbility &= ~CastlingRights.k;
+          this._intState.castlingAbility &= ~CastlingRights.q;
         }
       }
     }
@@ -209,53 +331,46 @@ export class Game {
       this.seenBoardPositions[boardFen] = 1;
     }
 
-    this.changeState();
-    console.log(toFenString(this));
+    return true;
   }
 
   private checkMate(colour: PieceColour) {
-    const king = this.getKing(colour);
-    const validator = getMoveValidator(king.piece as IPiece, this._board);
-    const kingInCheck = validator.isKingInCheck();
+    const kingInCheck = this.kingInCheck(colour);
 
     if (kingInCheck) {
-      const pieces = this._board.getPieces(colour).flatMap((x) => {
-        const validator = getMoveValidator(x.piece as IPiece, this._board);
-        return validator.moves({ rank: x.rank, file: x.file });
-      });
+      const pieces = this.moves(colour);
       return pieces.length === 0;
     }
     return false;
   }
 
-  private staleMate(colour: PieceColour) {
-    const pieces = this._board.getPieces(colour);
-    const hasMoves = pieces.flatMap((x) => {
-      const validator = getMoveValidator(x.piece as IPiece, this._board);
-      return validator.moves({ rank: x.rank, file: x.file });
+  staleMate(colour: PieceColour) {
+    const pieces = this.board.getPieces(colour);
+
+    const moves = pieces.flatMap((x) => {
+      const validators = getMoveValidator(
+        x.piece as IPiece,
+        this,
+        this.enPassantSquare,
+        this.CastlingAbility
+      );
+      const potential = validators.potentialMoves({
+        rank: x.rank,
+        file: x.file,
+      });
+      return potential;
     });
 
-    return hasMoves.length === 0;
+    return moves.length === 0;
   }
 
-  private getKing = (colour: PieceColour): Square => {
-    const king = this.board
-      .getPieces(colour)
-      .find((x) => x.piece?.pieceType === "KING");
-
-    if (!king) {
-      throw new Error("Where's the king?");
-    }
-    return king;
-  };
-
-  private changeState() {
+  private changeState(colourMove: PieceColour) {
     if (Object.values(this.seenBoardPositions).includes(3)) {
-      this._state = "DrawRepetition3";
+      this._intState.state = "DrawRepetition3";
       return;
     }
 
-    switch (this._state) {
+    switch (this.state) {
       case "BlackWin":
       case "StaleMate":
       case "WhiteWin":
@@ -263,24 +378,25 @@ export class Game {
       case "DrawRepetition5":
         break;
       case "WhiteMove": {
+        if (colourMove === "BLACK") break;
+        this._intState.state = "BlackMove";
         if (this.checkMate("BLACK")) {
-          this._state = "WhiteWin";
+          this._intState.state = "WhiteWin";
         } else if (this.staleMate("BLACK")) {
-          this._state = "StaleMate";
-        } else {
-          this._state = "BlackMove";
+          this._intState.state = "StaleMate";
         }
         break;
       }
       case "BlackMove": {
+        if (colourMove === "WHITE") break;
+        this._intState.state = "WhiteMove";
+
         if (this.checkMate("WHITE")) {
-          this._state = "BlackWin";
+          this._intState.state = "BlackWin";
         } else if (this.staleMate("WHITE")) {
-          this._state = "StaleMate";
-        } else {
-          this._state = "WhiteMove";
+          this._intState.state = "StaleMate";
         }
-        this._fullMoves += 1;
+        this._intState.fullMoves += 1;
         break;
       }
     }

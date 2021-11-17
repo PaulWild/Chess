@@ -48,7 +48,10 @@ export class Board {
       (x) => x.rank === position.rank && x.file === position.file
     );
 
-    if (square === undefined) throw new Error("Out of bounds");
+    if (square === undefined) {
+      console.log(position);
+      throw new Error("Out of bounds");
+    }
 
     return square;
   };

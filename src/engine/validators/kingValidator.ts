@@ -1,7 +1,6 @@
 import { FileArray } from "../board";
 import { Position, ValidMoves, CastlingRights } from "../types";
 import { BaseValidator } from "./baseValidator";
-import { getMoveValidator } from ".";
 
 export class KingValidator extends BaseValidator {
   potentialMoves(from: Position): ValidMoves {
@@ -65,19 +64,13 @@ export class KingValidator extends BaseValidator {
     return moveDeltas.every((fileDelta) => {
       const newFile = 4 + fileDelta;
 
-      const pieceAt = this.board.getPieceAt({
+      const pieceAt = this.game.board.getPieceAt({
         file: FileArray[newFile],
         rank: kingRank,
       });
 
       if (pieceAt.piece === null || fileDelta === 0) {
-        const clone = this.board.clone();
-        clone.move(
-          { rank: kingRank, file: "e" },
-          { rank: kingRank, file: FileArray[newFile] }
-        );
-
-        return !getMoveValidator(this.piece, clone).isKingInCheck();
+        return true;
       }
       return false;
     });

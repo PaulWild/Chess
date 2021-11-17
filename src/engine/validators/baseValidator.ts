@@ -1,5 +1,6 @@
-import { getMoveValidator, IValidMoves } from ".";
-import { Board, FileArray } from "../board";
+import { IValidMoves } from ".";
+import { FileArray } from "../board";
+import { Game } from "../game";
 import { IPiece } from "../pieces";
 import {
   Position,
@@ -15,30 +16,20 @@ const invalidMove: InvalidMove = { move: "INVALID" };
 
 export abstract class BaseValidator implements IValidMoves {
   piece: IPiece;
-  board: Board;
+  game: Game;
   enPassantTarget: Position | undefined;
   castlingRights: CastlingRights;
 
   constructor(
     piece: IPiece,
-    board: Board,
+    game: Game,
     enPassantTarget: Position | undefined,
     castlingRights: CastlingRights
   ) {
     this.piece = piece;
-    this.board = board;
+    this.game = game;
     this.enPassantTarget = enPassantTarget;
     this.castlingRights = castlingRights;
-  }
-
-  moves(from: Position): ValidMoves {
-    const allMoves = this.potentialMoves(from);
-    return allMoves.filter((x) => {
-      const clone = this.board.clone();
-      clone.move(from, { rank: x.rank, file: x.file });
-
-      return !getMoveValidator(this.piece, clone).isKingInCheck();
-    });
   }
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove {
@@ -48,14 +39,7 @@ export abstract class BaseValidator implements IValidMoves {
       (position) => position.file === to.file && position.rank === to.rank
     );
 
-    if (!potentialMove) return { move: "INVALID" };
-
-    const clone = this.board.clone();
-    clone.move(from, to);
-
-    return !getMoveValidator(this.piece, clone).isKingInCheck()
-      ? potentialMove
-      : invalidMove;
+    return potentialMove ?? { move: "INVALID" };
   }
 
   getMoveAtPosition = (
@@ -124,35 +108,15 @@ export abstract class BaseValidator implements IValidMoves {
   };
 
   canTakeAt = (rank: Rank, file: File): boolean => {
-    const square = this.board.getPieceAt({ rank: rank as Rank, file });
+    const square = this.game.board.getPieceAt({ rank: rank as Rank, file });
 
     return square.piece !== null && square.piece.colour !== this.piece.colour;
   };
 
   canMoveTo = (rank: Rank, file: File): boolean => {
-    const pieceAt = this.board.getPieceAt({ rank: rank, file });
+    const pieceAt = this.game.board.getPieceAt({ rank: rank, file });
 
     return pieceAt.piece === null;
-  };
-
-  isKingInCheck = (): Boolean => {
-    const kingPosition = this.board
-      .getPieces(this.piece.colour)
-      .find((x) => x.piece?.pieceType === "KING");
-
-    return this.board
-      .getPieces(this.piece.colour === "WHITE" ? "BLACK" : "WHITE")
-      .flatMap((x) =>
-        getMoveValidator(x.piece as IPiece, this.board).potentialMoves({
-          file: x.file,
-          rank: x.rank,
-        })
-      )
-      .some(
-        (x) =>
-          (x as Position).file === kingPosition?.file &&
-          (x as Position).rank === kingPosition?.rank
-      );
   };
 
   abstract potentialMoves(from: Position): ValidMoves;

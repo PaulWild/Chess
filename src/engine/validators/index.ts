@@ -1,4 +1,4 @@
-import { Board } from "../board";
+import { Game } from "../game";
 import { IPiece } from "../pieces";
 import {
   Position,
@@ -18,30 +18,26 @@ export interface IValidMoves {
   potentialMoves(position: Position): ValidMoves;
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove;
-
-  moves(from: Position): ValidMoves;
-
-  isKingInCheck(): Boolean;
 }
 
 export const getMoveValidator = (
   piece: IPiece,
-  board: Board,
+  game: Game,
   enPessantTarget: Position | undefined = undefined,
   castlingRights: CastlingRights = CastlingRights.None
 ): IValidMoves => {
   switch (piece.pieceType) {
     case "BISHOP":
-      return new BishopValidator(piece, board, enPessantTarget, castlingRights);
+      return new BishopValidator(piece, game, enPessantTarget, castlingRights);
     case "KING":
-      return new KingValidator(piece, board, enPessantTarget, castlingRights);
+      return new KingValidator(piece, game, enPessantTarget, castlingRights);
     case "KNIGHT":
-      return new KnightValidator(piece, board, enPessantTarget, castlingRights);
+      return new KnightValidator(piece, game, enPessantTarget, castlingRights);
     case "PAWN":
-      return new PawnValidator(piece, board, enPessantTarget, castlingRights);
+      return new PawnValidator(piece, game, enPessantTarget, castlingRights);
     case "QUEEN":
-      return new QueenValidator(piece, board, enPessantTarget, castlingRights);
+      return new QueenValidator(piece, game, enPessantTarget, castlingRights);
     case "ROOK":
-      return new RookValidator(piece, board, enPessantTarget, castlingRights);
+      return new RookValidator(piece, game, enPessantTarget, castlingRights);
   }
 };

@@ -13,16 +13,25 @@ export class PawnValidator extends BaseValidator {
       [increment, -1],
     ];
 
-    const moveOne = this.getMoveAtPosition(from, increment, 0);
-    if (this.isStandardMove(moveOne)) {
-      moves.push(moveOne);
+    const newRank = from.rank + increment;
+    let validRank = true;
+    if (newRank === 0 || newRank === 9) {
+      validRank = false;
     }
 
-    if (
-      this.isStandardMove(moveOne) &&
-      moveOne.move !== "Capture" &&
-      !pieceMoved
-    ) {
+    const canMoveOne = validRank
+      ? this.canMoveTo(newRank as Rank, from.file)
+      : false;
+
+    if (canMoveOne) {
+      moves.push({
+        move: "Move",
+        rank: newRank as Rank,
+        file: from.file,
+      });
+    }
+
+    if (canMoveOne && !pieceMoved) {
       const newRank = (from.rank + increment * 2) as Rank;
       const canMoveTwo = this.canMoveTo(newRank, from.file);
       if (canMoveTwo) {

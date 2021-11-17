@@ -8,13 +8,13 @@ export class QueenValidator extends BaseValidator {
     return [
       ...new RookValidator(
         this.piece,
-        this.board,
+        this.game,
         this.enPassantTarget,
         this.castlingRights
       ).potentialMoves(from),
       ...new BishopValidator(
         this.piece,
-        this.board,
+        this.game,
         this.enPassantTarget,
         this.castlingRights
       ).potentialMoves(from),
