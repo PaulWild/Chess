@@ -54,7 +54,33 @@ const perft = (game: Game, colour: PieceColour, depth: number): number => {
       file: moves[i].move.file,
     });
 
-    nodes += perft(newGame, colour === "WHITE" ? "BLACK" : "WHITE", depth - 1);
+    if (newGame.state === "BlackPromote" || newGame.state === "WhitePromote") {
+      const q = newGame.clone();
+      q.promote("QUEEN");
+      nodes += perft(
+        newGame,
+        colour === "WHITE" ? "BLACK" : "WHITE",
+        depth - 1
+      );
+
+      const r = newGame.clone();
+      r.promote("ROOK");
+      nodes += perft(r, colour === "WHITE" ? "BLACK" : "WHITE", depth - 1);
+
+      const b = newGame.clone();
+      b.promote("BISHOP");
+      nodes += perft(b, colour === "WHITE" ? "BLACK" : "WHITE", depth - 1);
+
+      const k = newGame.clone();
+      k.promote("KNIGHT");
+      nodes += perft(k, colour === "WHITE" ? "BLACK" : "WHITE", depth - 1);
+    } else {
+      nodes += perft(
+        newGame,
+        colour === "WHITE" ? "BLACK" : "WHITE",
+        depth - 1
+      );
+    }
   }
 
   return nodes;
@@ -65,12 +91,12 @@ describe("Game Engine", () => {
     caputres = 0;
   });
 
-  it.skip("calculates moves in a timely manner", () => {
+  it("calculates moves in a timely manner", () => {
     const colour = "WHITE";
     const game = new Game();
 
     console.time("perft timing");
-    const result = perft(game, colour, 4);
+    const result = perft(game, colour, 5);
     console.timeEnd("perft timing");
     console.log(caputres, "captures");
     expect(result).toBe(197281);
@@ -93,7 +119,7 @@ describe("Game Engine", () => {
     expect(result).toBe(14);
   });
 
-  it("calculates moves of position 3 to depth 4", () => {
+  it.skip("calculates moves of position 3 to depth 4", () => {
     const colour = "WHITE";
     const game = new Game(
       new Board(Position3()),
@@ -104,9 +130,9 @@ describe("Game Engine", () => {
     );
 
     console.time("perft timing");
-    const result = perft(game, colour, 4);
+    const result = perft(game, colour, 5);
     console.timeEnd("perft timing");
     console.log(caputres, "captures");
-    expect(result).toBe(674624);
+    expect(result).toBe(674_624);
   });
 });

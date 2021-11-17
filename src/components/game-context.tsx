@@ -84,6 +84,11 @@ const reducer = (state: State, action: Action): State => {
 
       game.move(from, to);
 
+      //Hack to add promotion straight away to Queen
+      if (game.state === "BlackPromote" || game.state === "WhitePromote") {
+        game.promote("QUEEN");
+      }
+
       return {
         board: game.board,
         state: game.state,

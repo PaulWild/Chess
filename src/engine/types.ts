@@ -65,6 +65,8 @@ export type GameState =
   | "WhiteMove"
   | "BlackMove"
   | "WhiteWin"
+  | "WhitePromote"
+  | "BlackPromote"
   | "BlackWin"
   | "StaleMate"
   | "DrawRepetition3"

@@ -1,12 +1,13 @@
 import { getMoveValidator } from "./validators";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
-import { IPiece } from "./pieces";
+import { Bishop, IPiece, Knight, Queen } from "./pieces";
 import {
   CastlingRights,
   File,
   GameState,
   PieceColour,
+  PieceType,
   Position,
   Rank,
 } from "./types";
@@ -111,6 +112,38 @@ export class Game {
     return moves;
   }
 
+  promote(pieceType: PieceType) {
+    if (this.state === "BlackPromote" || this.state === "WhitePromote") {
+      const colour: PieceColour =
+        this.state === "BlackPromote" ? "BLACK" : "WHITE";
+      const rank: Rank = this.state === "BlackPromote" ? 1 : 8;
+
+      const pawn = this.board
+        .getPieces(colour)
+        .find((x) => x.piece?.pieceType === "PAWN" && x.rank === rank);
+
+      pawn?.remove();
+      let piece;
+      switch (pieceType) {
+        case "BISHOP":
+          piece = new Bishop(colour);
+          break;
+        case "KNIGHT":
+          piece = new Knight(colour);
+          break;
+        case "QUEEN":
+          piece = new Queen(colour);
+          break;
+        default:
+          throw new Error("Not a promotable piece");
+      }
+      pawn?.place(piece);
+      this.changeState(colour);
+
+      return;
+    }
+  }
+
   movesPerf(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
 
@@ -183,6 +216,14 @@ export class Game {
           (x as Position).file === kingPosition?.file &&
           (x as Position).rank === kingPosition?.rank
       );
+  }
+
+  hasPieceToPromote(colour: PieceColour) {
+    const promotionRank = colour === "BLACK" ? 1 : 8;
+    const pawns = this.board
+      .getPieces(colour)
+      .filter((x) => x.piece?.pieceType === "PAWN");
+    return pawns.some((x) => x.rank === promotionRank);
   }
 
   move2(from: Position, to: Position): Boolean {
@@ -377,21 +418,26 @@ export class Game {
       case "DrawRepetition3":
       case "DrawRepetition5":
         break;
+      case "WhitePromote":
       case "WhiteMove": {
         if (colourMove === "BLACK") break;
         this._intState.state = "BlackMove";
-        if (this.checkMate("BLACK")) {
+        if (this.hasPieceToPromote(colourMove)) {
+          this._intState.state = "WhitePromote";
+        } else if (this.checkMate("BLACK")) {
           this._intState.state = "WhiteWin";
         } else if (this.staleMate("BLACK")) {
           this._intState.state = "StaleMate";
         }
         break;
       }
+      case "BlackPromote":
       case "BlackMove": {
         if (colourMove === "WHITE") break;
         this._intState.state = "WhiteMove";
-
-        if (this.checkMate("WHITE")) {
+        if (this.hasPieceToPromote(colourMove)) {
+          this._intState.state = "BlackPromote";
+        } else if (this.checkMate("WHITE")) {
           this._intState.state = "BlackWin";
         } else if (this.staleMate("WHITE")) {
           this._intState.state = "StaleMate";
