@@ -89,12 +89,11 @@ export class Game {
     const pieces = this.board.getPieces(colour);
 
     const moves = pieces.flatMap((x) => {
-      const cloned = this.clone();
       const validators = getMoveValidator(
         x.piece as IPiece,
-        cloned,
-        cloned.enPassantSquare,
-        cloned.CastlingAbility
+        this,
+        this.enPassantSquare,
+        this.CastlingAbility
       );
       const potential = validators.potentialMoves({
         rank: x.rank,

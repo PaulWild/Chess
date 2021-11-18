@@ -31,7 +31,6 @@ export const Position3 = (): Square[] => {
   return board;
 };
 
-let caputres = 0;
 const perft = (game: Game, colour: PieceColour, depth: number): number => {
   if (depth === 0) {
     return 1;
@@ -42,12 +41,6 @@ const perft = (game: Game, colour: PieceColour, depth: number): number => {
 
   for (let i = 0; i < moves.length; i++) {
     const newGame = game.clone();
-    if (
-      moves[i].move.move === "Capture" ||
-      moves[i].move.move === "CaptureEnPassant"
-    ) {
-      caputres++;
-    }
 
     newGame.move(moves[i].from, {
       rank: moves[i].move.rank,
@@ -87,22 +80,16 @@ const perft = (game: Game, colour: PieceColour, depth: number): number => {
 };
 
 describe("Game Engine", () => {
-  beforeEach(() => {
-    caputres = 0;
-  });
-
   it("calculates moves in a timely manner", () => {
     const colour = "WHITE";
     const game = new Game();
 
-    console.time("perft timing");
-    const result = perft(game, colour, 5);
-    console.timeEnd("perft timing");
-    console.log(caputres, "captures");
-    expect(result).toBe(197281);
+    const result = perft(game, colour, 3);
+
+    expect(result).toBe(8902);
   });
 
-  it.skip("calculates moves of position 3", () => {
+  it("calculates moves of position 3", () => {
     const colour = "WHITE";
     const game = new Game(
       new Board(Position3()),
@@ -112,14 +99,12 @@ describe("Game Engine", () => {
       CastlingRights.None
     );
 
-    console.time("perft timing");
-    const result = perft(game, colour, 1);
-    console.timeEnd("perft timing");
-    console.log(caputres, "captures");
-    expect(result).toBe(14);
+    const result = perft(game, colour, 3);
+
+    expect(result).toBe(2812);
   });
 
-  it.skip("calculates moves of position 3 to depth 4", () => {
+  it("calculates moves of position 3 to depth 4", () => {
     const colour = "WHITE";
     const game = new Game(
       new Board(Position3()),
@@ -129,10 +114,8 @@ describe("Game Engine", () => {
       CastlingRights.None
     );
 
-    console.time("perft timing");
-    const result = perft(game, colour, 5);
-    console.timeEnd("perft timing");
-    console.log(caputres, "captures");
-    expect(result).toBe(674_624);
+    const result = perft(game, colour, 4);
+
+    expect(result).toBe(43_238);
   });
 });
