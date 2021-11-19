@@ -69,7 +69,7 @@ export class KingValidator extends BaseValidator {
         rank: kingRank,
       });
 
-      if (pieceAt.piece === null || fileDelta === 0) {
+      if (pieceAt === null || fileDelta === 0) {
         return true;
       }
       return false;

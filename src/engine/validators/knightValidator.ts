@@ -15,7 +15,7 @@ export class KnightValidator extends BaseValidator {
     ];
 
     const piece = this.game.board.getPieceAt(from);
-    if (piece.piece === null) {
+    if (piece === null) {
       throw new Error("nope");
     }
 

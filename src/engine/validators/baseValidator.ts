@@ -110,13 +110,13 @@ export abstract class BaseValidator implements IValidMoves {
   canTakeAt = (rank: Rank, file: File): boolean => {
     const square = this.game.board.getPieceAt({ rank: rank as Rank, file });
 
-    return square.piece !== null && square.piece.colour !== this.piece.colour;
+    return square !== null && square.colour !== this.piece.colour;
   };
 
   canMoveTo = (rank: Rank, file: File): boolean => {
     const pieceAt = this.game.board.getPieceAt({ rank: rank, file });
 
-    return pieceAt.piece === null;
+    return pieceAt === null;
   };
 
   abstract potentialMoves(from: Position): ValidMoves;

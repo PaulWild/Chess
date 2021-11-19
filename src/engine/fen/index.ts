@@ -37,13 +37,13 @@ export const boardAsFenPlacement = (board: Board): string => {
     let rankString = "";
     FileArray.forEach((file) => {
       let piece = board.getPieceAt({ rank, file });
-      if (piece.piece) {
+      if (piece) {
         if (count > 0) {
           rankString += count;
           count = 0;
         }
         let str = "";
-        switch (piece.piece!.pieceType) {
+        switch (piece!.pieceType) {
           case "BISHOP":
             str = "b";
             break;
@@ -63,7 +63,7 @@ export const boardAsFenPlacement = (board: Board): string => {
             str = "r";
             break;
         }
-        if (piece.piece.colour === "WHITE") {
+        if (piece.colour === "WHITE") {
           str = str.toUpperCase();
         }
 
@@ -71,7 +71,7 @@ export const boardAsFenPlacement = (board: Board): string => {
       } else if (file === "h") {
         rankString += ++count;
       }
-      if (!piece.piece) {
+      if (!piece) {
         count += 1;
       }
     });

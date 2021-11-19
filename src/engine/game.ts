@@ -173,12 +173,11 @@ export class Game {
 
   move(from: Position, to: Position): Boolean {
     const square = this.board.getPieceAt(from);
-
-    if (!square.piece) {
+    if (!square) {
       throw new Error("No Piece to move");
     }
 
-    const piece = square.piece;
+    const piece = square;
 
     const state = {
       ...this._intState,
@@ -228,13 +227,13 @@ export class Game {
   move2(from: Position, to: Position): Boolean {
     const square = this.board.getPieceAt(from);
 
-    if (!square.piece) throw new Error("No Piece to move");
+    if (!square) throw new Error("No Piece to move");
 
-    if (this.state === "BlackMove" && square.piece?.colour === "WHITE") {
+    if (this.state === "BlackMove" && square?.colour === "WHITE") {
       return false;
     }
 
-    if (this.state === "WhiteMove" && square.piece?.colour === "BLACK") {
+    if (this.state === "WhiteMove" && square?.colour === "BLACK") {
       return false;
     }
 
@@ -242,9 +241,9 @@ export class Game {
       return false;
     }
 
-    const piece = square.piece;
+    const piece = square;
     const move = getMoveValidator(
-      square.piece,
+      square!,
       this,
       this.enPassantSquare,
       this.CastlingAbility
@@ -268,7 +267,7 @@ export class Game {
 
         if (move.move === "PawnPush") {
           let r = to.rank;
-          if (piece.colour === "WHITE") {
+          if (piece!.colour === "WHITE") {
             r -= 1;
           } else {
             r += 1;
@@ -278,18 +277,18 @@ export class Game {
           this._intState.enPassantSquare = undefined;
         }
 
-        if (piece.pieceType === "KING") {
-          if (piece.colour === "WHITE") {
+        if (piece!.pieceType === "KING") {
+          if (piece!.colour === "WHITE") {
             this._intState.castlingAbility &= ~CastlingRights.K;
             this._intState.castlingAbility &= ~CastlingRights.Q;
           }
-          if (piece.colour === "BLACK") {
+          if (piece!.colour === "BLACK") {
             this._intState.castlingAbility &= ~CastlingRights.k;
             this._intState.castlingAbility &= ~CastlingRights.q;
           }
         }
 
-        if (piece.pieceType === "ROOK") {
+        if (piece!.pieceType === "ROOK") {
           if (from.rank === 1 && from.file === "a") {
             this._intState.castlingAbility &= ~CastlingRights.Q;
           }
@@ -330,7 +329,7 @@ export class Game {
           move.move === "Capture" ||
           move.move === "CaptureEnPassant" ||
           move.move === "PawnPush" ||
-          (move.move === "Move" && piece.pieceType === "PAWN")
+          (move.move === "Move" && piece!.pieceType === "PAWN")
         ) {
           this._intState.halfMoves = 0;
         } else {
@@ -343,21 +342,21 @@ export class Game {
         this.board.move(from, to);
 
         const rookFrom = {
-          rank: square.rank,
+          rank: from.rank,
           file: move.type === "SHORT" ? "h" : ("a" as File),
         };
 
         const rookTo = {
-          rank: square.rank,
+          rank: from.rank,
           file: move.type === "SHORT" ? "f" : ("d" as File),
         };
 
         this.board.move(rookFrom, rookTo);
-        if (piece.colour === "WHITE") {
+        if (piece!.colour === "WHITE") {
           this._intState.castlingAbility &= ~CastlingRights.K;
           this._intState.castlingAbility &= ~CastlingRights.Q;
         }
-        if (piece.colour === "BLACK") {
+        if (piece!.colour === "BLACK") {
           this._intState.castlingAbility &= ~CastlingRights.k;
           this._intState.castlingAbility &= ~CastlingRights.q;
         }

@@ -15,11 +15,11 @@ import { FileArray, RankArray, Board as GameBoard } from "./engine/board";
 import { isLightSquare } from "./engine/square";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
-  const square = currentBoard.getPieceAt({ rank, file });
+  const piece = currentBoard.getPieceAt({ rank, file });
 
-  if (square.piece) {
-    const set = square.piece.colour === "WHITE" ? White : Black;
-    switch (square.piece.pieceType) {
+  if (piece) {
+    const set = piece.colour === "WHITE" ? White : Black;
+    switch (piece.pieceType) {
       case "BISHOP":
         return set.Bishop;
       case "KING":
