@@ -1,12 +1,6 @@
 import { Game } from "../game";
 import { IPiece } from "../pieces";
-import {
-  Position,
-  ValidMoves,
-  ValidMove,
-  InvalidMove,
-  CastlingRights,
-} from "../types";
+import { Position, ValidMove, InvalidMove, CastlingRights } from "../types";
 import { BishopValidator } from "./bishopValidator";
 import { KingValidator } from "./kingValidator";
 import { KnightValidator } from "./knightValidator";

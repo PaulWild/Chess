@@ -11,7 +11,6 @@ import {
   PieceType,
   Position,
   Rank,
-  ValidMove,
 } from "./types";
 import { boardAsFenPlacement } from "./fen";
 
