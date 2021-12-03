@@ -86,10 +86,9 @@ export class Game {
     return this._intState.state;
   }
 
-  moves(colour: PieceColour) {
+  *moves(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
 
-    const moves = [];
     for (const piece of pieces) {
       const validators = getMoveValidator(
         piece.piece as IPiece,
@@ -110,12 +109,10 @@ export class Game {
             { file: p.file, rank: p.rank }
           )
         ) {
-          moves.push(p);
+          yield p;
         }
       }
     }
-
-    return moves;
   }
 
   promote(pieceType: PieceType) {
@@ -393,8 +390,10 @@ export class Game {
     const kingInCheck = this.kingInCheck(colour);
 
     if (kingInCheck) {
-      const pieces = this.moves(colour);
-      return pieces.length === 0;
+      for (const move of this.moves(colour)) {
+        return false;
+      }
+      return true;
     }
     return false;
   }
