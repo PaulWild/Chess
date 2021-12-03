@@ -1,6 +1,7 @@
 import { getMoveValidator } from "./validators";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
+import { Square } from "./square";
 import { Bishop, IPiece, Knight, Queen } from "./pieces";
 import {
   CastlingRights,
@@ -88,8 +89,12 @@ export class Game {
 
   *moves(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
+    const king = pieces.find((x) => x.piece?.pieceType === "KING") as Square;
+    const rest = pieces.filter(
+      (x) => x.piece?.pieceType !== "KING"
+    ) as Square[];
 
-    for (const piece of pieces) {
+    for (const piece of [king, ...rest]) {
       const validators = getMoveValidator(
         piece.piece as IPiece,
         this,
@@ -390,7 +395,8 @@ export class Game {
     const kingInCheck = this.kingInCheck(colour);
 
     if (kingInCheck) {
-      for (const move of this.moves(colour)) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for (const _ of this.moves(colour)) {
         return false;
       }
       return true;
@@ -401,21 +407,24 @@ export class Game {
   staleMate(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
 
-    const moves = pieces.flatMap((x) => {
+    for (const piece of pieces) {
       const validators = getMoveValidator(
-        x.piece as IPiece,
+        piece.piece as IPiece,
         this,
         this.enPassantSquare,
         this.CastlingAbility
       );
       const potential = validators.potentialMoves({
-        rank: x.rank,
-        file: x.file,
+        rank: piece.rank,
+        file: piece.file,
       });
-      return potential;
-    });
 
-    return moves.length === 0;
+      // eslint-disable-next-line no-empty-pattern
+      for (const {} of potential) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private changeState(colourMove: PieceColour) {

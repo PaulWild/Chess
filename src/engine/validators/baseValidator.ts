@@ -32,13 +32,15 @@ export abstract class BaseValidator implements IValidMoves {
   }
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove {
-    const allMoves = Array.from(this.potentialMoves(from));
+    const allMoves = this.potentialMoves(from);
 
-    const potentialMove = allMoves.find(
-      (position) => position.file === to.file && position.rank === to.rank
-    );
+    for (const move of allMoves) {
+      if (move.file === to.file && move.rank === to.rank) {
+        return move;
+      }
+    }
 
-    return potentialMove ?? { move: "INVALID" };
+    return { move: "INVALID" };
   }
 
   getMoveAtPosition = (
