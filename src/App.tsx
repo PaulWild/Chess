@@ -14,6 +14,7 @@ import { File, GameState, Rank } from "./engine/types";
 import { FileArray, RankArray, Board as GameBoard } from "./engine/board";
 import { isLightSquare } from "./engine/square";
 import { Promotion } from "./components/promotion";
+import { useOnWindowResize } from "./utils/window";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
   const piece = currentBoard.getPieceAt({ rank, file });
@@ -181,14 +182,3 @@ function App() {
 }
 
 export default App;
-
-const useOnWindowResize = (action: Function) => {
-  useEffect(() => {
-    const handleResize = () => {
-      action();
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, [action]);
-};
