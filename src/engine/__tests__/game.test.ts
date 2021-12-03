@@ -39,12 +39,12 @@ const perft = (game: Game, colour: PieceColour, depth: number): number => {
   let nodes = 0;
   const moves = game.movesPerf(colour);
 
-  for (let i = 0; i < moves.length; i++) {
+  for (const move of moves) {
     const newGame = game.clone();
 
-    newGame.move(moves[i].from, {
-      rank: moves[i].move.rank,
-      file: moves[i].move.file,
+    newGame.move(move.from, {
+      rank: move.move.rank,
+      file: move.move.file,
     });
 
     if (newGame.state === "BlackPromote" || newGame.state === "WhitePromote") {

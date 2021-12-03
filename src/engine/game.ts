@@ -152,32 +152,32 @@ export class Game {
     }
   }
 
-  movesPerf(colour: PieceColour) {
+  *movesPerf(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
 
-    const moves = pieces.flatMap((x) => {
-      const validators = getMoveValidator(
-        x.piece as IPiece,
+    for (const piece of pieces) {
+      const potentialMoves = getMoveValidator(
+        piece.piece as IPiece,
         this,
         this.enPassantSquare,
         this.CastlingAbility
-      );
-      const potential = validators.potentialMoves({
-        rank: x.rank,
-        file: x.file,
+      ).potentialMoves({
+        rank: piece.rank,
+        file: piece.file,
       });
 
-      return Array.from(potential)
-        .filter((y) => {
-          const clone = this.clone();
-          return clone.move(
-            { file: x.file, rank: x.rank },
-            { file: y.file, rank: y.rank }
-          );
-        })
-        .map((z) => ({ move: z, from: { file: x.file, rank: x.rank } }));
-    });
-    return moves;
+      for (const potential of potentialMoves) {
+        const clone = this.clone();
+        if (
+          clone.move(
+            { file: piece.file, rank: piece.rank },
+            { file: potential.file, rank: potential.rank }
+          )
+        ) {
+          yield { move: potential, from: piece };
+        }
+      }
+    }
   }
 
   move(from: Position, to: Position): Boolean {
