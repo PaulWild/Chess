@@ -201,21 +201,28 @@ export class Game {
       .getPieces(colour)
       .find((x) => x.piece?.pieceType === "KING");
 
-    return this.board
-      .getPieces(colour === "WHITE" ? "BLACK" : "WHITE")
-      .flatMap((x) =>
-        Array.from(
-          getMoveValidator(x.piece as IPiece, this).potentialMoves({
-            file: x.file,
-            rank: x.rank,
-          })
-        )
-      )
-      .some(
-        (x) =>
-          (x as Position).file === kingPosition?.file &&
-          (x as Position).rank === kingPosition?.rank
-      );
+    const pieces = this.board.getPieces(colour === "WHITE" ? "BLACK" : "WHITE");
+
+    for (const piece of pieces) {
+      const moves = getMoveValidator(
+        piece.piece as IPiece,
+        this
+      ).potentialMoves({
+        file: piece.file,
+        rank: piece.rank,
+      });
+
+      for (const move of moves) {
+        if (
+          move.file === kingPosition?.file &&
+          move.rank === kingPosition?.rank
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   hasPieceToPromote(colour: PieceColour) {
