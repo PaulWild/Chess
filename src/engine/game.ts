@@ -10,6 +10,7 @@ import {
   PieceType,
   Position,
   Rank,
+  ValidMove,
 } from "./types";
 import { boardAsFenPlacement } from "./fen";
 
@@ -88,26 +89,32 @@ export class Game {
   moves(colour: PieceColour) {
     const pieces = this.board.getPieces(colour);
 
-    const moves = pieces.flatMap((x) => {
+    const moves = [];
+    for (const piece of pieces) {
       const validators = getMoveValidator(
-        x.piece as IPiece,
+        piece.piece as IPiece,
         this,
         this.enPassantSquare,
         this.CastlingAbility
       );
       const potential = validators.potentialMoves({
-        rank: x.rank,
-        file: x.file,
+        rank: piece.rank,
+        file: piece.file,
       });
 
-      return Array.from(potential).filter((y) => {
+      for (const p of potential) {
         const clone = this.clone();
-        return clone.move(
-          { file: x.file, rank: x.rank },
-          { file: y.file, rank: y.rank }
-        );
-      });
-    });
+        if (
+          clone.move(
+            { file: piece.file, rank: piece.rank },
+            { file: p.file, rank: p.rank }
+          )
+        ) {
+          moves.push(p);
+        }
+      }
+    }
+
     return moves;
   }
 
