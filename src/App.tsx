@@ -13,6 +13,7 @@ import { useContext } from "react";
 import { File, GameState, Rank } from "./engine/types";
 import { FileArray, RankArray, Board as GameBoard } from "./engine/board";
 import { isLightSquare } from "./engine/square";
+import { Promotion } from "./components/promotion";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
   const piece = currentBoard.getPieceAt({ rank, file });
@@ -135,7 +136,7 @@ const gameStateAsString = (state: GameState) => {
 const Board = () => {
   const chessGrid = useRef<HTMLDivElement>(null);
   const [bound, setBound] = useState<DOMRect>();
-  const [state] = useContext(DraggableContext);
+  const [state, dispatch] = useContext(DraggableContext);
 
   const onWindowResize = useCallback(() => {
     setBound(chessGrid.current?.getBoundingClientRect());
@@ -147,6 +148,10 @@ const Board = () => {
     setBound(chessGrid.current?.getBoundingClientRect());
   }, [chessGrid]);
 
+  const promote = (piece: "QUEEN" | "ROOK" | "BISHOP" | "KNIGHT") => {
+    dispatch({ type: "PROMOTE", payload: { piece } });
+  };
+
   return (
     <div className={styles.container}>
       <div ref={chessGrid} className={styles.chessGrid}>
@@ -157,6 +162,12 @@ const Board = () => {
         )}
       </div>
       <div className={styles.infoPane}>{gameStateAsString(state.state)}</div>
+      {state.state === "WhitePromote" && (
+        <Promotion colour={"WHITE"} promoteCallback={promote} />
+      )}
+      {state.state === "BlackPromote" && (
+        <Promotion colour={"BLACK"} promoteCallback={promote} />
+      )}
     </div>
   );
 };

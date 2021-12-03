@@ -2,7 +2,7 @@ import { getMoveValidator } from "./validators";
 import { Board } from "./board";
 import { buildBoard } from "./initial-board";
 import { Square } from "./square";
-import { Bishop, IPiece, Knight, Queen } from "./pieces";
+import { Bishop, IPiece, Knight, Queen, Rook } from "./pieces";
 import {
   CastlingRights,
   File,
@@ -129,7 +129,8 @@ export class Game {
         .getPieces(colour)
         .find((x) => x.piece?.pieceType === "PAWN" && x.rank === rank);
 
-      pawn?.remove();
+      this.board.remove(pawn!);
+
       let piece;
       switch (pieceType) {
         case "BISHOP":
@@ -141,10 +142,13 @@ export class Game {
         case "QUEEN":
           piece = new Queen(colour);
           break;
+        case "ROOK":
+          piece = new Rook(colour);
+          break;
         default:
           throw new Error("Not a promotable piece");
       }
-      pawn?.place(piece);
+      this.board.placeAt(pawn!, piece);
       this.changeState(colour);
 
       return;

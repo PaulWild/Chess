@@ -38,7 +38,11 @@ type Action =
       type: "SQUARE_ATTACKED";
       payload: { rank: Rank; file: File };
     }
-  | { type: "MOVE" };
+  | { type: "MOVE" }
+  | {
+      type: "PROMOTE";
+      payload: { piece: "QUEEN" | "ROOK" | "BISHOP" | "KNIGHT" };
+    };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -68,6 +72,12 @@ const reducer = (state: State, action: Action): State => {
           ...action.payload,
         },
       };
+    case "PROMOTE":
+      game.promote(action.payload.piece);
+      return {
+        board: game.board,
+        state: game.state,
+      };
     case "MOVE": {
       if (!state.threatenedSquare) throw new Error("state is corrupted");
       if (!state.activePiece) throw new Error("state is corrupted");
@@ -83,11 +93,6 @@ const reducer = (state: State, action: Action): State => {
       };
 
       game.move(from, to);
-
-      //Hack to add promotion straight away to Queen
-      if (game.state === "BlackPromote" || game.state === "WhitePromote") {
-        game.promote("QUEEN");
-      }
 
       return {
         board: game.board,

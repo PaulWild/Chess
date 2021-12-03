@@ -1,0 +1,16 @@
+.promotionSection {
+  position: absolute;
+  background-color: white;
+  margin: 2vm;
+}
+
+.chessSquare {
+  box-sizing: border-box;
+  position: relative;
+  width: calc(11vmin);
+}
+
+.chessRow {
+  display: flex;
+  flex-direction: row;
+}
