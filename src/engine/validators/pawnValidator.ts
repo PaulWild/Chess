@@ -1,10 +1,9 @@
 import { FileArray } from "../board";
-import { Position, Rank, ValidMoves } from "../types";
+import { Position, Rank, ValidMove, ValidMoves } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class PawnValidator extends BaseValidator {
-  potentialMoves(from: Position): ValidMoves {
-    const moves: ValidMoves = [];
+  *potentialMoves(from: Position): IterableIterator<ValidMove> {
     const increment = this.piece.colour === "WHITE" ? 1 : -1;
     const pieceMoved = this.pieceMoved(from);
 
@@ -24,22 +23,22 @@ export class PawnValidator extends BaseValidator {
       : false;
 
     if (canMoveOne) {
-      moves.push({
+      yield {
         move: "Move",
         rank: newRank as Rank,
         file: from.file,
-      });
+      };
     }
 
     if (canMoveOne && !pieceMoved) {
       const newRank = (from.rank + increment * 2) as Rank;
       const canMoveTwo = this.canMoveTo(newRank, from.file);
       if (canMoveTwo) {
-        moves.push({
+        yield {
           move: "PawnPush",
           rank: newRank,
           file: from.file,
-        });
+        };
       }
     }
 
@@ -64,7 +63,9 @@ export class PawnValidator extends BaseValidator {
       }
     });
 
-    return [...moves, ...captures];
+    for (var capture of captures) {
+      yield capture;
+    }
   }
 
   private pieceMoved(from: Position) {

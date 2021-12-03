@@ -100,7 +100,7 @@ export class Game {
         file: x.file,
       });
 
-      return potential.filter((y) => {
+      return Array.from(potential).filter((y) => {
         const clone = this.clone();
         return clone.move(
           { file: x.file, rank: x.rank },
@@ -158,7 +158,7 @@ export class Game {
         file: x.file,
       });
 
-      return potential
+      return Array.from(potential)
         .filter((y) => {
           const clone = this.clone();
           return clone.move(
@@ -204,10 +204,12 @@ export class Game {
     return this.board
       .getPieces(colour === "WHITE" ? "BLACK" : "WHITE")
       .flatMap((x) =>
-        getMoveValidator(x.piece as IPiece, this).potentialMoves({
-          file: x.file,
-          rank: x.rank,
-        })
+        Array.from(
+          getMoveValidator(x.piece as IPiece, this).potentialMoves({
+            file: x.file,
+            rank: x.rank,
+          })
+        )
       )
       .some(
         (x) =>

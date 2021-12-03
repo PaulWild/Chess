@@ -15,7 +15,7 @@ import { QueenValidator } from "./queenValidator";
 import { RookValidator } from "./rookValidator";
 
 export interface IValidMoves {
-  potentialMoves(position: Position): ValidMoves;
+  potentialMoves(position: Position): IterableIterator<ValidMove>;
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove;
 }

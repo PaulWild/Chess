@@ -5,7 +5,6 @@ import { IPiece } from "../pieces";
 import {
   Position,
   CastlingRights,
-  ValidMoves,
   ValidMove,
   InvalidMove,
   Rank,
@@ -33,7 +32,7 @@ export abstract class BaseValidator implements IValidMoves {
   }
 
   canMove(from: Position, to: Position): ValidMove | InvalidMove {
-    const allMoves = this.potentialMoves(from);
+    const allMoves = Array.from(this.potentialMoves(from));
 
     const potentialMove = allMoves.find(
       (position) => position.file === to.file && position.rank === to.rank
@@ -56,12 +55,11 @@ export abstract class BaseValidator implements IValidMoves {
     return this.checkPosition(newRank as Rank, FileArray[newFile]);
   };
 
-  getMovesOnLine = (
+  *getMovesOnLine(
     position: Position,
     rankDelta: number,
     fileDelta: number
-  ): ValidMoves => {
-    const validMoves = [];
+  ): IterableIterator<ValidMove> {
     for (let i = 1; i < 8; i++) {
       const newFile = FileArray.indexOf(position.file) + fileDelta * i;
       const newRank = position.rank + rankDelta * i;
@@ -76,14 +74,13 @@ export abstract class BaseValidator implements IValidMoves {
         break;
       }
 
-      validMoves.push(move);
+      yield move;
 
       if (move.move === "Capture") {
         break;
       }
     }
-    return validMoves;
-  };
+  }
 
   checkPosition = (rank: Rank, file: File): ValidMove | InvalidMove => {
     if (this.canTakeAt(rank, file)) {
@@ -119,5 +116,5 @@ export abstract class BaseValidator implements IValidMoves {
     return pieceAt === null;
   };
 
-  abstract potentialMoves(from: Position): ValidMoves;
+  abstract potentialMoves(from: Position): IterableIterator<ValidMove>;
 }

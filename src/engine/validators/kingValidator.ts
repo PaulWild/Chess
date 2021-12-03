@@ -1,10 +1,9 @@
 import { FileArray } from "../board";
-import { Position, ValidMoves, CastlingRights } from "../types";
+import { Position, ValidMove, CastlingRights } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class KingValidator extends BaseValidator {
-  potentialMoves(from: Position): ValidMoves {
-    let validMoves: ValidMoves = [];
+  *potentialMoves(from: Position): IterableIterator<ValidMove> {
     const moveDeltas = [
       [1, 1],
       [0, 1],
@@ -19,29 +18,30 @@ export class KingValidator extends BaseValidator {
     const file = FileArray.indexOf(from.file);
     const rank = from.rank;
 
-    validMoves = moveDeltas
-      .map(([rd, fd]) => this.getMoveAtPosition(from, rd, fd))
-      .filter(this.isStandardMove);
+    for (const [rd, fd] of moveDeltas) {
+      const move = this.getMoveAtPosition(from, rd, fd);
+      if (this.isStandardMove(move)) {
+        yield move;
+      }
+    }
 
     if (this.canCastle("SHORT"))
-      validMoves.push({
+      yield {
         move: "Castle",
         type: "SHORT",
         colour: this.piece.colour,
         rank: rank,
         file: FileArray[file + 2],
-      });
+      };
 
     if (this.canCastle("LONG"))
-      validMoves.push({
+      yield {
         move: "Castle",
         type: "LONG",
         colour: this.piece.colour,
         rank: rank,
         file: FileArray[file - 2],
-      });
-
-    return validMoves;
+      };
   }
 
   private castlingDeltas = (type: "SHORT" | "LONG") =>

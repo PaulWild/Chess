@@ -1,8 +1,8 @@
-import { Position, ValidMoves } from "../types";
+import { Position, ValidMove } from "../types";
 import { BaseValidator } from "./baseValidator";
 
 export class KnightValidator extends BaseValidator {
-  potentialMoves(from: Position): ValidMoves {
+  *potentialMoves(from: Position): IterableIterator<ValidMove> {
     const moveDeltas = [
       [1, 2],
       [2, 1],
@@ -19,8 +19,11 @@ export class KnightValidator extends BaseValidator {
       throw new Error("nope");
     }
 
-    return moveDeltas
-      .map(([rd, fd]) => this.getMoveAtPosition(from, rd, fd))
-      .filter(this.isStandardMove);
+    for (const [rd, fd] of moveDeltas) {
+      const move = this.getMoveAtPosition(from, rd, fd);
+      if (this.isStandardMove(move)) {
+        yield move;
+      }
+    }
   }
 }
