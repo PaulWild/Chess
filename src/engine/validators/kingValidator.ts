@@ -53,7 +53,7 @@ export class KingValidator extends BaseValidator {
     const kingRank = this.piece.colour === "WHITE" ? 1 : 8;
 
     let side = CastlingRights.None;
-    if (this.piece.colour === "WHITE") {
+    if (this.piece.colour === "BLACK") {
       side = type === "SHORT" ? CastlingRights.k : CastlingRights.q;
     } else {
       side = type === "SHORT" ? CastlingRights.K : CastlingRights.Q;

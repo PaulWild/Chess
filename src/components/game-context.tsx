@@ -7,6 +7,7 @@ const game = new Game();
 const initialState: State = {
   board: game.board,
   state: game.state,
+  game: game,
 };
 
 const GameContext = createContext<[State, Dispatch<Action>]>([
@@ -19,6 +20,7 @@ type State = {
   threatenedSquare?: { rank: Rank; file: File };
   board: Board;
   state: GameState;
+  game: Game;
 };
 
 type ActivePiece = {
@@ -39,6 +41,13 @@ type Action =
       payload: { rank: Rank; file: File };
     }
   | { type: "MOVE" }
+  | {
+      type: "BLACKMOVE";
+      payload: {
+        from: { rank: Rank; file: File };
+        to: { rank: Rank; file: File };
+      };
+    }
   | {
       type: "PROMOTE";
       payload: { piece: "QUEEN" | "ROOK" | "BISHOP" | "KNIGHT" };
@@ -77,6 +86,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         board: game.board,
         state: game.state,
+        game: game,
       };
     case "MOVE": {
       if (!state.threatenedSquare) throw new Error("state is corrupted");
@@ -92,11 +102,31 @@ const reducer = (state: State, action: Action): State => {
         rank: state.threatenedSquare.rank,
       };
 
-      game.move(from, to);
+      if (state.state === "WhiteMove") {
+        try {
+          game.move(from, to);
+        } catch (e) {
+          console.log(e);
+        }
+      }
 
       return {
         board: game.board,
         state: game.state,
+        game: game,
+      };
+    }
+    case "BLACKMOVE": {
+      try {
+        game.move(action.payload.from, action.payload.to);
+      } catch (e) {
+        console.log(e);
+      }
+
+      return {
+        board: game.board,
+        state: game.state,
+        game: game,
       };
     }
   }

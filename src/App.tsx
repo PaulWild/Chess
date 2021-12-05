@@ -15,6 +15,8 @@ import { FileArray, RankArray, Board as GameBoard } from "./engine/board";
 import { isLightSquare } from "./engine/square";
 import { Promotion } from "./components/promotion";
 import { useOnWindowResize } from "./utils/window";
+import { useStockfish } from "./useStockfish";
+import { toFenString } from "./engine/fen";
 
 const getPieceAt = (rank: Rank, file: File, currentBoard: GameBoard) => {
   const piece = currentBoard.getPieceAt({ rank, file });
@@ -135,9 +137,28 @@ const gameStateAsString = (state: GameState) => {
 };
 
 const Board = () => {
+  const [state, dispatch] = useContext(DraggableContext);
+
+  const fun = useCallback(
+    (str: string) => {
+      const ranksAndFiles = str.split("");
+      const from = {
+        file: ranksAndFiles[0] as File,
+        rank: parseInt(ranksAndFiles[1]) as Rank,
+      };
+
+      const to = {
+        file: ranksAndFiles[2] as File,
+        rank: parseInt(ranksAndFiles[3]) as Rank,
+      };
+
+      dispatch({ type: "BLACKMOVE", payload: { from, to } });
+    },
+    [dispatch]
+  );
+  const BlackMove = useStockfish(fun);
   const chessGrid = useRef<HTMLDivElement>(null);
   const [bound, setBound] = useState<DOMRect>();
-  const [state, dispatch] = useContext(DraggableContext);
 
   const onWindowResize = useCallback(() => {
     setBound(chessGrid.current?.getBoundingClientRect());
@@ -152,6 +173,12 @@ const Board = () => {
   const promote = (piece: "QUEEN" | "ROOK" | "BISHOP" | "KNIGHT") => {
     dispatch({ type: "PROMOTE", payload: { piece } });
   };
+
+  useEffect(() => {
+    if (state.state === "BlackMove") {
+      BlackMove(toFenString(state.game));
+    }
+  }, [BlackMove, state.game, state.state]);
 
   return (
     <div className={styles.container}>
